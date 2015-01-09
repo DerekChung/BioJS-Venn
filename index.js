@@ -1,4 +1,5 @@
 require('d3');
+var sets = require('simplesets')
 
 var VennPrototype = {
 
@@ -6,61 +7,36 @@ var VennPrototype = {
 		
 		try {
 			var data = JSON.parse(text);
-			var counter = 0;
 
-			this._name.length = 0;
-	        this._listSets = {};
-
-	        for ( key in data ) {
-	        	this._name.push( key );
-	        	this._listSets[ key ] = new Set( data[key] );
-	        }
+			this.updateAllList( data );
 	    }
 	    catch ( e ){
 	    	alert( "Wrong JSON format." );
 	    }
-	}
-
-	updateList: function ( listName, data ) {
-
-		var arr = [];
-
-		if (typeof data == 'string' || data instanceof String){
-			arr = data.split("\n")
-		}
-		
-		if ( data.constructor === Array ) {
-			arr = data;
-		}
-
-		if ( this._listSets[ listName ] ) {
-			this._listSets[ listName ] = data;
-		}
-		else if ( !this._listSets[ listName ] && this._listSets[ listName ].size + 1 <= this._N )
-			this._listSets[ listName ] = data;
-	}
-
-	addElementOnList: function ( listName, data ) {
-
-		if ( this._listSets[ listName ].has( data ) ) {
-			return;
-		}
-
-		this._listSets[ listName ].add( data );
-
-	}
+	},
 
 	updateAllList: function ( data ) {
 		
-		this._listSets = {};
+		this._listSets = [];
+		this._name = [];
 
 		var counter = 0;
-		
+
 		for ( key in data ) {
-			if ( ++counter >= this._N ) {
+			if ( ++counter > this._N ) {
 				break;
 			}
-			this._listSets[key] = data;
+			this._listSets[ counter ] = data;
+			this._name[ counter ] = data;
+		}
+
+		if ( counter - 1 == this._N ) {
+			var ans = this._generateAllIntersectSets( 1, 7 );
+			this._IntersectionSet = ans.list;
+			this._IntersectionSetName = ans.lName;
+		}
+		else{
+			this._IntersectionSet = this._generateAllIntersectSets( 1, counter );
 		}
 	}
 }
@@ -75,8 +51,9 @@ exports.BioJSVenn = function( target, lists ) {
 	this._name = [];
 
 	this._N = 7;
-	this._listSets = {};
+	this._listSets = [];
 	this._IntersectionSet;
+	this._IntersectionSetName;
 
 	this._predefineColor = [];
 	this._predefineIntersectPath = [];
@@ -165,7 +142,6 @@ exports.BioJSVenn = function( target, lists ) {
 		}
 	}
 
-
 	//define drawing canvas/
 	this._w = 746, this._h = 900;
 
@@ -173,5 +149,32 @@ exports.BioJSVenn = function( target, lists ) {
 						.append("svg")
 						.attr("width", this._w)
 						.attr("height", this._h);
+
+	this._generateAllIntersectSets = function ( start, end ){
+
+		var ans = {};
+		var name = {};
+
+		for ( var i = end; i >= start; i-- ) {
+			var result = {};
+			var name_result = {};
+
+			if ( this._listSets[i] ) {
+				result[ i.toString() ] = this._listSets[i];
+				name_result[ i.toString() ] = this._name[i];
+			}
+
+			for ( var key in ans ){
+				if ( this._listSets[ i ] ) {
+					result[i.toString() + "∩" + key] = ans[key].intersection( this._listSets[ i ] );
+					name_result[i.toString() + "∩" + key] = this._name[i] + "∩" + result[ key ];
+				}
+			}
+			for (var attrname in result) { ans[attrname] = result[attrname]; }
+			for (var attrname in name_result) { name[attrname] = name_result[attrname]; }
+		}
+
+		return { list: ans, lName: name};
+	}
 
 }
