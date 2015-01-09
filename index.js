@@ -2,10 +2,67 @@ require('d3');
 
 var VennPrototype = {
 
-	readJSON: function( data ) {
+	readJSON: function( text ) {
+		
+		try {
+			var data = JSON.parse(text);
+			var counter = 0;
+
+			this._name.length = 0;
+	        this._listSets = {};
+
+	        for ( key in data ) {
+	        	this._name.push( key );
+	        	this._listSets[ key ] = new Set( data[key] );
+	        }
+	    }
+	    catch ( e ){
+	    	alert( "Wrong JSON format." );
+	    }
+	}
+
+	updateList: function ( listName, data ) {
+
+		var arr = [];
+
+		if (typeof data == 'string' || data instanceof String){
+			arr = data.split("\n")
+		}
+		
+		if ( data.constructor === Array ) {
+			arr = data;
+		}
+
+		if ( this._listSets[ listName ] ) {
+			this._listSets[ listName ] = data;
+		}
+		else if ( !this._listSets[ listName ] && this._listSets[ listName ].size + 1 <= this._N )
+			this._listSets[ listName ] = data;
+	}
+
+	addElementOnList: function ( listName, data ) {
+
+		if ( this._listSets[ listName ].has( data ) ) {
+			return;
+		}
+
+		this._listSets[ listName ].add( data );
 
 	}
 
+	updateAllList: function ( data ) {
+		
+		this._listSets = {};
+
+		var counter = 0;
+		
+		for ( key in data ) {
+			if ( ++counter >= this._N ) {
+				break;
+			}
+			this._listSets[key] = data;
+		}
+	}
 }
 
 exports.BioJSVenn = function( target, lists ) {
@@ -14,8 +71,11 @@ exports.BioJSVenn = function( target, lists ) {
 		return;
 
 	//predefine number of sets in Venn diagram.
+
+	this._name = [];
+
 	this._N = 7;
-	this._listSets = [];
+	this._listSets = {};
 	this._IntersectionSet;
 
 	this._predefineColor = [];
@@ -109,7 +169,7 @@ exports.BioJSVenn = function( target, lists ) {
 	//define drawing canvas/
 	this._w = 746, this._h = 900;
 
-	this._gvennStage = d3.select("#first")
+	this._gvennStage = d3.select( "#" + target )
 						.append("svg")
 						.attr("width", this._w)
 						.attr("height", this._h);
