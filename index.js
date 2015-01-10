@@ -18,7 +18,6 @@ var VennPrototype = {
 	updateAllList: function ( data ) {
 		
 		this._listSets = [];
-		this._name = [];
 		
 		var ans = {};
 		var counter = 0;
@@ -27,8 +26,7 @@ var VennPrototype = {
 			if ( ++counter > this._N ) {
 				break;
 			}
-			this._listSets[ counter ] = new sets.Set(data[key]);
-			this._name[ counter ] = key;
+			this._listSets[ counter ] = {  name: key , list: new sets.Set(data[key])};
 		}
 
 		if ( counter - 1 == this._N ) 
@@ -340,14 +338,14 @@ exports.BioJSVenn = function( target, lists ) {
 			var name_result = {};
 
 			if ( this._listSets[i] ) {
-				result[ i.toString() ] = this._listSets[i];
-				name_result[ i.toString() ] = this._name[i];
+				result[ i.toString() ] = this._listSets[i].list;
+				name_result[ i.toString() ] = this._listSets[i].name;
 			}
 
 			for ( var key in ans ){
 				if ( this._listSets[ i ] ) {
-					result[i.toString() + "∩" + key] = ans[key].intersection( this._listSets[ i ] );
-					name_result[i.toString() + "∩" + key] = this._name[i] + " ∩ " + name[ key ];
+					result[i.toString() + "∩" + key] = ans[key].intersection( this._listSets[ i ].list );
+					name_result[i.toString() + "∩" + key] = this._listSets[i].name + " ∩ " + name[ key ];
 				}
 			}
 			for (var attrname in result) { ans[attrname] = result[attrname]; }
@@ -368,7 +366,6 @@ exports.BioJSVenn = function( target, lists ) {
 
 	//predefine number of sets in Venn diagram.
 	//magic, don't touch
-	this._name = [];
 
 	this._N = 7;
 	this._listSets = [];
