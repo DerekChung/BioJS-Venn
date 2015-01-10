@@ -102,8 +102,6 @@ exports.BioJSVenn = function( target, lists ) {
 				
 				return text;
 			} );
-
-
 	};
 
 	//call this when mouse out event is triggered
@@ -151,7 +149,8 @@ exports.BioJSVenn = function( target, lists ) {
     		.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
     		.attr("rx", function (d) { return d.rx} ).attr("ry", function (d) { return d.ry } );
 
-    	defs.append( "ellipse" )
+    	defs.append( "clipPath" )
+    		.append( "ellipse" )
 			.attr( "id", function (d) { return "clipL" + d.id } )
 			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
     		.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
@@ -213,8 +212,13 @@ exports.BioJSVenn = function( target, lists ) {
 				}
 
 				group.append( "rect" )
+					.attr( "id", combination[i][j].reverse().join("∩") )
+					.attr( "opacity", 0 )
 					.attr( "width", w ).attr( "height", h )
-					.attr( "x", 0 ).attr( "y", 0 );
+					.attr( "x", 0 ).attr( "y", 0 )
+					.on("mouseover", function (d) { mouseOverCall( this, this.id ) } ) 
+					.on("mouseout", function (d) {  mouseOutCall(this); })
+					.on("mousemove", function (d) { mouseMoveCall(this); });
 			}
 		}
 		    
@@ -313,7 +317,7 @@ exports.BioJSVenn = function( target, lists ) {
 			for ( var key in ans ){
 				if ( this._listSets[ i ] ) {
 					result[i.toString() + "∩" + key] = ans[key].intersection( this._listSets[ i ] );
-					name_result[i.toString() + "∩" + key] = this._name[i] + "∩" + result[ key ];
+					name_result[i.toString() + "∩" + key] = this._name[i] + " ∩ " + name[ key ];
 				}
 			}
 			for (var attrname in result) { ans[attrname] = result[attrname]; }
@@ -472,7 +476,9 @@ exports.BioJSVenn = function( target, lists ) {
 exports.BioJSVenn.prototype = VennPrototype;
 
 var data = { "list-1": ["A", "B", "C", "D" ],
-			 "list-2": ["A", "B", "D", "E", "F" ] };
+			 "list-2": ["A", "B", "D", "E", "F" ],
+			 "list-3": ["1", "2", "3", "4", "E", "F"],
+			 "list-4": ["q", "w", "r", "4", "E", "F"], };
 
 var test = new exports.BioJSVenn( "first", data );
 },{"d3":2,"simplesets":3}],2:[function(require,module,exports){
