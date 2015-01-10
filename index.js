@@ -50,6 +50,26 @@ exports.BioJSVenn = function( target, lists ) {
 	if ( !target )
 		return;
 
+	var generateCombination = function ( start, end ){
+		var ans = [];
+
+		for ( var i = end; i >= start; i-- ){
+			var result = [];
+			result.push( [ i ] );
+
+
+			for ( var j = 0; j < ans.length; j++ ){
+				for ( var k = 0; k < ans[j].length; k++ ){
+					result.push( ans[j][k].concat( [i] ) );
+				}
+			}
+			
+			ans.push( result );
+		}
+
+		return ans;
+	}
+
 	//call this when mouse over event is triggered
 	var mouseOverCall = function ( target, id ){
 		d3.select(target).transition()
@@ -57,21 +77,32 @@ exports.BioJSVenn = function( target, lists ) {
 		  .style( "stroke-opacity", selectedStrokeFillOpacity);
 
 		//Update the tooltip position and value
-		var b = d3.select("#venntooltip").transition()
-		.style("left", (d3.event.pageX - 100) + "px")
-		.style("top", (d3.event.pageY - 100) + "px")
+		var b = d3.select("#vennToolTip").transition()
+		.style("left", (d3.event.pageX - 250) + "px")
+		.style("top", (d3.event.pageY - 5) + "px")
 		.style("position", "absolute")
-		.style("opacity", 0.5 )
-		.style("z-index", 9)  
-		.text( function (d) { 
+		.style("opacity", 0.6 )
+		.style("z-index", 9)
 
-			var text = IntersectionSetName[ id ] + ":\n";
+		d3.select("#vennToolTipTitle")
+			.text( function (d) { 
 
-			if ( IntersectionSet[ id ] )
-				text += IntersectionSet[ id ].array().join("\n");
+			var text = IntersectionSet[ id ].name + ":\n";
 			
 			return text;
 		});
+
+		d3.select( "#vennToolTipList" )
+			.text( function (d) {
+				var text = "";
+				
+				if ( IntersectionSet[ id ] )
+					text += IntersectionSet[ id ].list.array().join("\n");
+				
+				return text;
+			} );
+
+
 	};
 
 	//call this when mouse out event is triggered
@@ -86,13 +117,13 @@ exports.BioJSVenn = function( target, lists ) {
 		  .style("stroke-opacity", unselectedStrokeFillOpacity );
        
        //Hide the tooltip
-		d3.select("#venntooltip").style("opacity", 0 ); 
+		d3.select("#vennToolTip").style("opacity", 0 ); 
 	};
 
 	var mouseMoveCall = function (traget) {
-		d3.select("#venntooltip")
-			.style("left", (d3.event.pageX - 100) + "px")
-			.style("top", (d3.event.pageY - 100) + "px")	
+		d3.select("#vennToolTip")
+			.style("left", (d3.event.pageX - 250) + "px")
+			.style("top", (d3.event.pageY - 5) + "px")	
 	};
 
 	var drawEllipse = function ( jsonData ){
@@ -133,7 +164,7 @@ exports.BioJSVenn = function( target, lists ) {
 					.enter()
 					.append( "g" );
 
-			shapeGroup.append( "ellipse" )
+		shapeGroup.append( "ellipse" )
 				.attr( "id", function (d) { return "shape" + d.id } )
 				.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
     			.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
@@ -147,15 +178,31 @@ exports.BioJSVenn = function( target, lists ) {
 				.on("mouseout", function (d)  {  mouseOutCall(this, d.id); })
 				.on("mousemove", function (d) { mouseMoveCall(this); });
 
-			shapeGroup.append( "text" )
-					.attr( "id", function (d) { return "text" + d.id } )
-					.text( function (d){
-						if ( !IntersectionSet[ d.id.toString() ] )
-							return 0;
-						else
-						return IntersectionSet[ d.id.toString() ].size() 
-					} )
-					.attr("x", function (d) { return d.textX } ).attr("y", function(d){ return d.textY });
+		shapeGroup.append( "text" )
+				.attr( "id", function (d) { return "text" + d.id } )
+				.text( function (d){
+					if ( !IntersectionSet[ d.id.toString() ] )
+						return 0;
+					else
+					return IntersectionSet[ d.id.toString() ].list.size() 
+				} )
+				.attr("x", function (d) { return d.textX } ).attr("y", function(d){ return d.textY });
+
+		var combination = combinationList[ jsonData.length - 1 ];
+
+		/*
+		combinationList
+		*/
+		for ( var i = 0; i < combination.length; i++ ) {
+			if ( combination[i].length == 1 )
+				continue;
+
+			for ( var j = 0; j < combination[i].length; j++ ){
+				for ( var k = 0; k < combination[i][j].length; k++ ){
+
+				}
+			}
+		}
 		    
 	};
 
@@ -224,7 +271,7 @@ exports.BioJSVenn = function( target, lists ) {
 				if ( !IntersectionSet[ d.id.toString() ] )
 					return 0;
 				else
-					return IntersectionSet[ d.id.toString() ].size() } )
+					return IntersectionSet[ d.id.toString() ].list.size() } )
 			.attr("x", function (d) { return d.textX } ).attr("y", function(d){ return d.textY });
 
 	};
@@ -263,9 +310,13 @@ exports.BioJSVenn = function( target, lists ) {
 	}; 
 
 	this._updateIntersectSets = function ( ans ) {
-		IntersectionSet = ans.list;
-		IntersectionSetName = ans.lName;
-	}
+
+		IntersectionSet = {};
+
+		for ( key in ans.list ) {
+			IntersectionSet[ key ] = { name: ans.lName[key], list: ans.list[key] }
+		}
+	};
 
 	//predefine number of sets in Venn diagram.
 	//magic, don't touch
@@ -274,7 +325,12 @@ exports.BioJSVenn = function( target, lists ) {
 	this._N = 7;
 	this._listSets = [];
 	var IntersectionSet;
-	var IntersectionSetName;
+	/*
+		combinationList: this array is used for store all the combinations.
+		For example, there are 3 sets. The intersect set will be the combinations
+		of these 3 sets. 
+	*/
+	var combinationList = [];
 
 	var predefineColor = [];
 	var predefineIntersectPath = [];
@@ -373,8 +429,8 @@ exports.BioJSVenn = function( target, lists ) {
 						.attr("width", w)
 						.attr("height", h);
 
-    var tooltip = d3.select("#" + target).append("div")
-		.attr( "id", "venntooltip" )
+    var tooltip = d3.select("body").append("div")
+		.attr( "id", "vennToolTip" )
 		.style("position", "absolute")
 		.style("text-align", "center")
 		.style("width", "220px")
@@ -386,10 +442,14 @@ exports.BioJSVenn = function( target, lists ) {
 		.style("opacity", 0);
 
 	tooltip.append( "p" )
-		.append( "strong" ).attr("id", "vennToolTipTitle");
+		.append( "strong" ).attr("id", "vennToolTipTitle").style( "color", "white" );
 
 	tooltip.append( "p" )
 		.attr("id", "vennToolTipList");
+
+    for ( var i = 1; i <= this._N; i++ ){
+    	combinationList.push( generateCombination( 1, i ) );
+    }
 
     this.updateAllList( lists );
 
