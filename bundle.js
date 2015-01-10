@@ -74,11 +74,17 @@ exports.BioJSVenn = function( target, lists ) {
 	//call this when mouse over event is triggered
 	var mouseOverCall = function ( target, id ){
 		d3.select(target).transition()
-		  .style( "fill-opacity",  selectedShapeFillOpacity )
+		  .style( "fill-opacity",  function() {
+		  		if ( typeof id == 'string' || id instanceof String)
+		  			return 0.4;
+		  		else 
+		  			return selectedShapeFillOpacity;
+		  		}
+		  	)
 		  .style( "stroke-opacity", selectedStrokeFillOpacity);
 
 		//Update the tooltip position and value
-		var b = d3.select("#vennToolTip").transition()
+		d3.select("#vennToolTip").transition()
 		.style("left", (d3.event.pageX - 250) + "px")
 		.style("top", (d3.event.pageY - 5) + "px")
 		.style("position", "absolute")
@@ -107,13 +113,13 @@ exports.BioJSVenn = function( target, lists ) {
 	//call this when mouse out event is triggered
 	var mouseOutCall = function (target, id) {
 		d3.select(target).transition()
-		  .style("fill-opacity", function () {
-		  	if ( typeof id == 'string' || id instanceof String)
-		  		return 0;
-		  	else 
-		  		return unselectedShapeFillOpacity;
-		  })
-		  .style("stroke-opacity", unselectedStrokeFillOpacity );
+			.style("fill-opacity", function () {
+		 		if ( typeof id == 'string' || id instanceof String)
+		  			return 0;
+		 		else 
+		 			return unselectedShapeFillOpacity;
+		  	})
+		 	.style("stroke-opacity", unselectedStrokeFillOpacity );
        
        //Hide the tooltip
 		d3.select("#vennToolTip").style("opacity", 0 ); 
@@ -150,8 +156,8 @@ exports.BioJSVenn = function( target, lists ) {
     		.attr("rx", function (d) { return d.rx} ).attr("ry", function (d) { return d.ry } );
 
     	defs.append( "clipPath" )
+ 			.attr( "id", function (d) { return "clipL" + d.id } )
     		.append( "ellipse" )
-			.attr( "id", function (d) { return "clipL" + d.id } )
 			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
     		.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
     		.attr("rx", function (d) { return d.rx + StrokeWidth} ).attr("ry", function (d) { return d.ry + StrokeWidth} );
@@ -197,6 +203,21 @@ exports.BioJSVenn = function( target, lists ) {
 							2 4,2 3,2 4,3,2
 							1 4,1 4,3,1 2,1 4,2,1  
 		*/
+
+		var clip = function ( reuseID, group, clipID ){
+
+				for ( var k = 0; k < combination[i][j].length; k++ ){
+					group = group.append( "g" )
+								.attr( "clip-path", "url(#" + reuseID + combination[i][j][k] + ")" );
+				}
+
+				return group.append( "rect" )
+							.attr( "id", clipID )
+							.attr( "width", w ).attr( "height", h )
+							.attr( "x", 0 ).attr( "y", 0 )
+
+		}
+
 		for ( var i = 0; i < combination.length; i++ ) {
 
 			for ( var j = 0; j < combination[i].length; j++ ){
@@ -204,21 +225,19 @@ exports.BioJSVenn = function( target, lists ) {
 				if ( combination[i][j].length == 1 )
 					continue;
 				
-				var group = svg;
-				
-				for ( var k = 0; k < combination[i][j].length; k++ ){
-					group = group.append( "g" )
-								.attr( "clip-path", "url(#clip" + combination[i][j][k] + ")" )
-				}
+				var targetID = combination[i][j].reverse().join("∩");
 
-				group.append( "rect" )
-					.attr( "id", combination[i][j].reverse().join("∩") )
-					.attr( "opacity", 0 )
-					.attr( "width", w ).attr( "height", h )
-					.attr( "x", 0 ).attr( "y", 0 )
-					.on("mouseover", function (d) { mouseOverCall( this, this.id ) } ) 
-					.on("mouseout", function (d) {  mouseOutCall(this); })
-					.on("mousemove", function (d) { mouseMoveCall(this); });
+				var group = svg.append( "g" )
+								.attr( "id", "g" + targetID )
+								.attr( "fill-opacity", 0 );
+
+				clip( "clipL", group, "L" + targetID ).style( "fill", "white" );
+				
+				clip( "clip", group, targetID ).on("mouseover", function (d) { mouseOverCall( "#g" + this.id , this.id ) } ) 
+								.on("mouseout", function (d) {  mouseOutCall("#g" + this.id, this.id); })
+								.on("mousemove", function (d) { mouseMoveCall(this); });
+
+
 			}
 		}
 		    
@@ -279,9 +298,9 @@ exports.BioJSVenn = function( target, lists ) {
 					return predefineStrokeColor;
 			} )
 			.style("stroke-width", StrokeWidth )
-			 .on("mouseover", function (d) {  mouseOverCall(this, d.id); })
-		     .on("mouseout", function (d) {  mouseOutCall(this, d.id); })
-		     .on("mousemove", function (d) { mouseMoveCall(this); });
+			.on("mouseover", function (d) {  mouseOverCall(this, d.id); })
+		    .on("mouseout", function (d) {  mouseOutCall(this, d.id); })
+		    .on("mousemove", function (d) { mouseMoveCall(this); });
 
 		elem.append( "text" )
 			.attr( "id", function (d){ return "text" + d.id } )
@@ -452,7 +471,7 @@ exports.BioJSVenn = function( target, lists ) {
 		.style("position", "absolute")
 		.style("text-align", "center")
 		.style("width", "220px")
-		.style("height", "220px")
+
 		.style("background", "#333")
 		.style("color", "#ddd")
 		.style("border", "0px")
@@ -463,7 +482,7 @@ exports.BioJSVenn = function( target, lists ) {
 		.append( "strong" ).attr("id", "vennToolTipTitle").style( "color", "white" );
 
 	tooltip.append( "p" )
-		.attr("id", "vennToolTipList");
+		.attr("id", "vennToolTipList").style( "color", "white" );
 
     for ( var i = 1; i <= this._N; i++ ){
     	combinationList.push( generateCombination( 1, i ) );
@@ -477,8 +496,9 @@ exports.BioJSVenn.prototype = VennPrototype;
 
 var data = { "list-1": ["A", "B", "C", "D" ],
 			 "list-2": ["A", "B", "D", "E", "F" ],
-			 "list-3": ["1", "2", "3", "4", "E", "F"],
-			 "list-4": ["q", "w", "r", "4", "E", "F"], };
+			 "list-3": ["A", "1", "2", "3", "4", "E", "F"],
+			 "list-4": ["A", "q", "w", "r", "4", "E", "F"],
+			 "list-5": ["A", "g", "w", "r", "E" ] };
 
 var test = new exports.BioJSVenn( "first", data );
 },{"d3":2,"simplesets":3}],2:[function(require,module,exports){
