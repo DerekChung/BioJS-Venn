@@ -31,13 +31,10 @@ var VennPrototype = {
 			this._name[ counter ] = key;
 		}
 
-		if ( counter - 1 == this._N ) {
-			var ans = this._generateAllIntersectSets( 1, 7 );
-
-		}
-		else{
-			var ans = this._generateAllIntersectSets( 1, counter );
-		}
+		if ( counter - 1 == this._N ) 
+			ans = this._generateAllIntersectSets( 1, 7 );
+		else
+			ans = this._generateAllIntersectSets( 1, counter );
 
 		this._updateIntersectSets( ans );
 		this._updateGraph();
@@ -57,13 +54,10 @@ exports.BioJSVenn = function( target, lists ) {
 			var result = [];
 			result.push( [ i ] );
 
-
-			for ( var j = 0; j < ans.length; j++ ){
-				for ( var k = 0; k < ans[j].length; k++ ){
+			for ( var j = 0; j < ans.length; j++ )
+				for ( var k = 0; k < ans[j].length; k++ )
 					result.push( ans[j][k].concat( [i] ) );
-				}
-			}
-			
+
 			ans.push( result );
 		}
 
@@ -137,15 +131,16 @@ exports.BioJSVenn = function( target, lists ) {
 
 		var targetTransform = jsonData.length - 1;
 
-		var defs = svg.append("g")
-					.attr( "transform", "scale(" + transform[ targetTransform ].scale + ") "
+		var transformGroup = svg.append("g")
+								.attr( "transform", "scale(" + transform[ targetTransform ].scale + ") "
 											+ "translate(" + transform[ targetTransform ].x + ", "
 											+ transform[ targetTransform ].y + ")" )
-					.append( "defs" )
-					.selectAll("_")
-					.data(jsonData)
-					.enter()
-					.append("g");
+
+		var defs = transformGroup.append( "defs" )
+								.selectAll("_")
+								.data(jsonData)
+								.enter()
+								.append("g");
 
 		defs.append( "clipPath" )
 			.attr( "id", function (d) { return "clip" + d.id } )
@@ -154,21 +149,10 @@ exports.BioJSVenn = function( target, lists ) {
     		.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
     		.attr("rx", function (d) { return d.rx} ).attr("ry", function (d) { return d.ry } );
 
-    	defs.append( "clipPath" )
- 			.attr( "id", function (d) { return "clipL" + d.id } )
-    		.append( "ellipse" )
-			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
-    		.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
-    		.attr("rx", function (d) { return d.rx + StrokeWidth} ).attr("ry", function (d) { return d.ry + StrokeWidth} );
-
-		var shapeGroup = svg.append( "g" )
-					.attr( "transform", "scale(" + transform[ targetTransform ].scale + ") "
-											+ "translate(" + transform[ targetTransform ].x + ", "
-											+ transform[ targetTransform ].y + ")" )
-					.selectAll("_")
-					.data(jsonData)
-					.enter()
-					.append( "g" );
+		var shapeGroup = transformGroup.selectAll("_")
+									.data(jsonData)
+									.enter()
+									.append( "g" );
 
 		shapeGroup.append( "ellipse" )
 				.attr( "id", function (d) { return "shape" + d.id } )
@@ -180,8 +164,8 @@ exports.BioJSVenn = function( target, lists ) {
 				.style("stroke-opacity", unselectedStrokeFillOpacity )
 				.style("stroke", predefineStrokeColor )
 				.style("stroke-width", StrokeWidth )
-				.on("mouseover", function (d) {  mouseOverCall(this, d.id); })
-				.on("mouseout", function (d)  {  mouseOutCall(this, d.id); })
+				.on("mouseover", function (d) { mouseOverCall(this, d.id); })
+				.on("mouseout", function (d)  { mouseOutCall(this, d.id); })
 				.on("mousemove", function (d) { mouseMoveCall(this); });
 
 		shapeGroup.append( "text" )
@@ -190,7 +174,7 @@ exports.BioJSVenn = function( target, lists ) {
 					if ( !IntersectionSet[ d.id.toString() ] )
 						return 0;
 					else
-					return IntersectionSet[ d.id.toString() ].list.size() 
+						return IntersectionSet[ d.id.toString() ].list.size() 
 				} )
 				.attr("x", function (d) { return d.textX } ).attr("y", function(d){ return d.textY });
 
@@ -214,7 +198,6 @@ exports.BioJSVenn = function( target, lists ) {
 							.attr( "id", clipID )
 							.attr( "width", w ).attr( "height", h )
 							.attr( "x", 0 ).attr( "y", 0 )
-
 		}
 
 		for ( var i = 0; i < combination.length; i++ ) {
@@ -226,7 +209,7 @@ exports.BioJSVenn = function( target, lists ) {
 				
 				var targetID = combination[i][j].reverse().join("∩");
 
-				var group = svg.append( "g" )
+				var group = transformGroup.append( "g" )
 								.attr( "id", "g" + targetID )
 								.attr( "fill-opacity", 0 );
 
@@ -258,50 +241,44 @@ exports.BioJSVenn = function( target, lists ) {
 		}
 		*/
 
-		var elem = gvennStage.selectAll("_")
-							 .data(jsonData)
-							 .enter()
-							 .append("g");
+		var targetTransform = jsonData.length - 1;
 
-		elem.append("path")
-			.attr( "id", function (d){ return d.id } )
+		var transformGroup = svg.append("g")
+								.attr( "transform", "scale(" + transform[ targetTransform ].scale + ") "
+											+ "translate(" + transform[ targetTransform ].x + ", "
+											+ transform[ targetTransform ].y + ")" )
+
+		var defs = transformGroup.append( "defs" )
+								.selectAll("_")
+								.data(jsonData)
+								.enter()
+								.append("g");
+
+		defs.append( "clipPath" )
+			.attr( "id", function (d) { return "clip" + d.id } )
+			.append("path")
 			.attr( "d", function (d){ return d.d } )
-			.attr("transform", function (d) { return  "translate(" + d.translateX + ", " + d.translateY + ") "
-			 										+ "scale(" + d.scale + ")" })
-			.attr( "fill", function (d) {
-				//check if it is shape or intersect area
-				if ( typeof d.id == 'string' || d.id instanceof String)
-					//return color for intersect area
-					return "transparent";
-				else
-					//return color for shape
-					return predefineColor[d.id];
-			} )
-			.style("fill-opacity", function (d) {
-				//check if it is shape or intersect area
-				if ( typeof d.id == 'string' || d.id instanceof String)
-					//return fill-opacity for intersect area stroke
-					return 0;
-				else
-					//return fill-opacity for shape
-					return unselectedShapeFillOpacity;
-			} )
-			.style("stroke-opacity", unselectedStrokeFillOpacity )
-			.style("stroke", function (d) {
-				//check if it is shape or intersect area
-				if ( typeof d.id == 'string' || d.id instanceof String)
-					//return color for intersect area stroke
-					return "white";
-				else
-					//return color for shape stroke
-					return predefineStrokeColor;
-			} )
-			.style("stroke-width", StrokeWidth )
-			.on("mouseover", function (d) {  mouseOverCall(this, d.id); })
-		    .on("mouseout", function (d) {  mouseOutCall(this, d.id); })
-		    .on("mousemove", function (d) { mouseMoveCall(this); });
 
-		elem.append( "text" )
+		var shapeGroup = transformGroup.selectAll("_")
+									.data(jsonData)
+									.enter()
+									.append( "g" );
+
+
+		shapeGroup.attr( "id", function (d) { return "clip" + d.id } )
+				.append("path")
+				.attr( "id", function (d){ return d.id } )
+				.attr( "d", function (d){ return d.d } )
+				.attr( "fill", function (d) { return predefineColor[d.id]; } )
+				.style("fill-opacity", function (d) { return unselectedShapeFillOpacity; } )
+				.style("stroke-opacity", unselectedStrokeFillOpacity )
+				.style("stroke", function (d) { return predefineStrokeColor; } )
+				.style("stroke-width", StrokeWidth )
+				.on("mouseover", function (d) {  mouseOverCall(this, d.id); })
+				.on("mouseout", function (d) {  mouseOutCall(this, d.id); })
+				.on("mousemove", function (d) { mouseMoveCall(this); });
+
+		shapeGroup.append( "text" )
 			.attr( "id", function (d){ return "text" + d.id } )
 			.text( function (d){
 				if ( !IntersectionSet[ d.id.toString() ] )
@@ -309,6 +286,38 @@ exports.BioJSVenn = function( target, lists ) {
 				else
 					return IntersectionSet[ d.id.toString() ].list.size() } )
 			.attr("x", function (d) { return d.textX } ).attr("y", function(d){ return d.textY });
+
+		var clip = function ( reuseID, group, clipID ){
+
+				for ( var k = 0; k < combination[i][j].length; k++ ){
+					group = group.append( "g" )
+								.attr( "clip-path", "url(#" + reuseID + combination[i][j][k] + ")" );
+				}
+
+				return group.append( "rect" )
+							.attr( "id", clipID )
+							.attr( "width", w ).attr( "height", h )
+							.attr( "x", 0 ).attr( "y", 0 )
+		}
+
+		for ( var i = 0; i < combination.length; i++ ) {
+
+			for ( var j = 0; j < combination[i].length; j++ ){
+				
+				if ( combination[i][j].length == 1 )
+					continue;
+				
+				var targetID = combination[i][j].reverse().join("∩");
+
+				var group = transformGroup.append( "g" )
+								.attr( "id", "g" + targetID )
+								.attr( "fill-opacity", 0 );
+				
+				clip( "clip", group, targetID ).on("mouseover", function (d) { mouseOverCall( "#g" + this.id , this.id ) } ) 
+								.on("mouseout", function (d) {  mouseOutCall("#g" + this.id, this.id); })
+								.on("mousemove", function (d) { mouseMoveCall(this); });
+			}
+		}
 
 	};
 
@@ -428,11 +437,11 @@ exports.BioJSVenn = function( target, lists ) {
 
 	//predefine triangles for 6 sets venn diagram
 	predefineShape[6] = [	{ "id": 1, "textX": 115, "textY": 120, "d": "M  51.277  38.868 L 255.580 191.186 L 190.900 269.427 Z" },
-								{ "id": 2, "textX": 197, "textY":  90, "d": "M 201.988  26.426 L 158.444 276.222 L 241.044 235.111 Z" },
-								{ "id": 3, "textX": 275, "textY": 130, "d": "M 323.271  79.619 L 159.604 152.683 L 204.652 276.669 Z" },
-						  		{ "id": 4, "textX": 295, "textY": 250, "d": "M 453.561 295.349 L 181.764 146.805 L 158.980 252.461 Z" },
-								{ "id": 5, "textX": 215, "textY": 320, "d": "M 251.886 455.785 L 158.136 181.491 L 214.208  94.690 Z" },
-								{ "id": 6, "textX": 135, "textY": 290, "d": "M  60.184 344.046 L 262.476 109.903 L 223.276 253.962 Z" }];
+							{ "id": 2, "textX": 197, "textY":  90, "d": "M 201.988  26.426 L 158.444 276.222 L 241.044 235.111 Z" },
+							{ "id": 3, "textX": 275, "textY": 130, "d": "M 323.271  79.619 L 159.604 152.683 L 204.652 276.669 Z" },
+						  	{ "id": 4, "textX": 295, "textY": 250, "d": "M 453.561 295.349 L 181.764 146.805 L 158.980 252.461 Z" },
+							{ "id": 5, "textX": 215, "textY": 320, "d": "M 251.886 455.785 L 158.136 181.491 L 214.208  94.690 Z" },
+							{ "id": 6, "textX": 135, "textY": 290, "d": "M  60.184 344.046 L 262.476 109.903 L 223.276 253.962 Z" }];
 
 	//predefine ellipsis for 7 sets venn diagram
 	predefineShape[7] = [	{ "id": 1, "cx": 220, "cy": 228,"rotate": 0,   "textX": 40,  "textY": 294 },
@@ -454,7 +463,6 @@ exports.BioJSVenn = function( target, lists ) {
 			}
 		}
 	}
-
 	//magic finished
 
 	//define drawing canvas/
@@ -470,7 +478,6 @@ exports.BioJSVenn = function( target, lists ) {
 		.style("position", "absolute")
 		.style("text-align", "center")
 		.style("width", "220px")
-
 		.style("background", "#333")
 		.style("color", "#ddd")
 		.style("border", "0px")
@@ -483,10 +490,9 @@ exports.BioJSVenn = function( target, lists ) {
 	tooltip.append( "p" )
 		.attr("id", "vennToolTipList").style( "color", "white" );
 
-    for ( var i = 1; i <= this._N; i++ ){
+    for ( var i = 1; i <= this._N; i++ )
     	combinationList.push( generateCombination( 1, i ) );
-    }
-
+    
     this.updateAllList( lists );
 
 }
@@ -497,6 +503,7 @@ var data = { "list-1": ["A", "B", "C", "D" ],
 			 "list-2": ["A", "B", "D", "E", "F" ],
 			 "list-3": ["A", "1", "2", "3", "4", "E", "F"],
 			 "list-4": ["A", "q", "w", "r", "4", "E", "F"],
-			 "list-5": ["A", "g", "w", "r", "E" ] };
+			 "list-5": ["A", "g", "w", "r", "E" ],
+			 "list-6": ["A", "g", "~" ] };
 
 var test = new exports.BioJSVenn( "first", data );
