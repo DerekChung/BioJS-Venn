@@ -212,7 +212,7 @@ exports.BioJSVenn = function( target, lists ) {
 
 				group.append( "rect" )
 					.attr( "id", combination[i][j].reverse().join("∩") )
-					.attr( "opacity", 0 )
+					.attr( "fill-opacity", 0 )
 					.attr( "width", w ).attr( "height", h )
 					.attr( "x", 0 ).attr( "y", 0 )
 					.on("mouseover", function (d) { mouseOverCall( this, this.id ) } ) 
