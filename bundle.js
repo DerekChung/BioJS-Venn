@@ -89,12 +89,19 @@ exports.BioJSVenn = function( target, lists ) {
 			.text( function (d) { 
 
 			var text = IntersectionSet[ id ].name + ":\n";
-
-			if ( IntersectionSet[ id ] )
-				text += IntersectionSet[ id ].list.array().join("\n");
 			
 			return text;
 		});
+
+		d3.select( "#vennToolTipList" )
+			.text( function (d) {
+				var text = "";
+
+				if ( IntersectionSet[ id ] )
+					text += IntersectionSet[ id ].list.array().join("\n");
+				
+				return text;
+			} );
 
 
 	};
@@ -137,8 +144,9 @@ exports.BioJSVenn = function( target, lists ) {
 					.enter()
 					.append("g");
 
-		defs.append( "ellipse" )
+		defs.append( "clipPath" )
 			.attr( "id", function (d) { return "clip" + d.id } )
+			.append( "ellipse" )
 			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
     		.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
     		.attr("rx", function (d) { return d.rx} ).attr("ry", function (d) { return d.ry } );
@@ -185,16 +193,28 @@ exports.BioJSVenn = function( target, lists ) {
 		var combination = combinationList[ jsonData.length - 1 ];
 
 		/*
-		combinationList
+		combinationList -> 	4
+							3 4,3
+							2 4,2 3,2 4,3,2
+							1 4,1 4,3,1 2,1 4,2,1  
 		*/
 		for ( var i = 0; i < combination.length; i++ ) {
-			if ( combination[i].length == 1 )
-				continue;
 
 			for ( var j = 0; j < combination[i].length; j++ ){
+				
+				if ( combination[i][j].length == 1 )
+					continue;
+				
+				var group = svg;
+				
 				for ( var k = 0; k < combination[i][j].length; k++ ){
-
+					group = group.append( "g" )
+								.attr( "clip-path", "url(#clip" + combination[i][j][k] + ")" )
 				}
+
+				group.append( "rect" )
+					.attr( "width", w ).attr( "height", h )
+					.attr( "x", 0 ).attr( "y", 0 );
 			}
 		}
 		    
