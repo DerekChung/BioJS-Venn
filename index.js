@@ -72,8 +72,6 @@ exports.BioJSVenn = function( target, lists ) {
 			
 			return text;
 		});
-
-		var a = 1;
 	};
 
 	//call this when mouse out event is triggered
@@ -104,38 +102,61 @@ exports.BioJSVenn = function( target, lists ) {
 
 		var targetTransform = jsonData.length - 1;
 
-		var elem = svg.append("g")
-						.attr( "transform", "scale(" + transform[ targetTransform ].scale + ") "
+		var defs = svg.append("g")
+					.attr( "transform", "scale(" + transform[ targetTransform ].scale + ") "
 											+ "translate(" + transform[ targetTransform ].x + ", "
 											+ transform[ targetTransform ].y + ")" )
-						.selectAll("_")
-						.data(jsonData)
-						.enter()
-						.append("g");
+					.append( "defs" )
+					.selectAll("_")
+					.data(jsonData)
+					.enter()
+					.append("g");
 
-		elem.attr( "id", function (d) { return "shape" + d.id } )
-			.append( "ellipse" )
+		defs.append( "ellipse" )
+			.attr( "id", function (d) { return "clip" + d.id } )
 			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
     		.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
-    		.attr("rx", function (d) { return d.rx} ).attr("ry", function (d) { return d.ry } )
-    		.style("fill", function(d) { return predefineColor[d.id] })
-			.style("fill-opacity", unselectedShapeFillOpacity )
-			.style("stroke-opacity", unselectedStrokeFillOpacity )
-			.style("stroke", predefineStrokeColor )
-			.style("stroke-width", StrokeWidth )
-			.on("mouseover", function (d) {  mouseOverCall(this, d.id); })
-		    .on("mouseout", function (d)  {  mouseOutCall(this, d.id); })
-		    .on("mousemove", function (d) { mouseMoveCall(this); });
+    		.attr("rx", function (d) { return d.rx} ).attr("ry", function (d) { return d.ry } );
 
-		elem.append( "text" )
-			.attr( "id", function (d) { return "text" + d.id } )
-			.text( function (d){
-				if ( !IntersectionSet[ d.id.toString() ] )
-					return 0;
-				else
-					return IntersectionSet[ d.id.toString() ].size() } )
-			.attr("x", function (d) { return d.textX } ).attr("y", function(d){ return d.textY });
-		     
+    	defs.append( "ellipse" )
+			.attr( "id", function (d) { return "clipL" + d.id } )
+			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
+    		.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
+    		.attr("rx", function (d) { return d.rx + StrokeWidth} ).attr("ry", function (d) { return d.ry + StrokeWidth} );
+
+		var shapeGroup = svg.append( "g" )
+					.attr( "transform", "scale(" + transform[ targetTransform ].scale + ") "
+											+ "translate(" + transform[ targetTransform ].x + ", "
+											+ transform[ targetTransform ].y + ")" )
+					.selectAll("_")
+					.data(jsonData)
+					.enter()
+					.append( "g" );
+
+			shapeGroup.append( "ellipse" )
+				.attr( "id", function (d) { return "shape" + d.id } )
+				.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
+    			.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
+    			.attr("rx", function (d) { return d.rx} ).attr("ry", function (d) { return d.ry } )
+    			.style("fill", function(d) { return predefineColor[d.id] })
+				.style("fill-opacity", unselectedShapeFillOpacity )
+				.style("stroke-opacity", unselectedStrokeFillOpacity )
+				.style("stroke", predefineStrokeColor )
+				.style("stroke-width", StrokeWidth )
+				.on("mouseover", function (d) {  mouseOverCall(this, d.id); })
+				.on("mouseout", function (d)  {  mouseOutCall(this, d.id); })
+				.on("mousemove", function (d) { mouseMoveCall(this); });
+
+			shapeGroup.append( "text" )
+					.attr( "id", function (d) { return "text" + d.id } )
+					.text( function (d){
+						if ( !IntersectionSet[ d.id.toString() ] )
+							return 0;
+						else
+						return IntersectionSet[ d.id.toString() ].size() 
+					} )
+					.attr("x", function (d) { return d.textX } ).attr("y", function(d){ return d.textY });
+		    
 	};
 
 	var drawPath = function ( jsonData ){
