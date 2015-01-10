@@ -211,9 +211,9 @@ exports.BioJSVenn = function( target, lists ) {
 
 				var group = transformGroup.append( "g" )
 								.attr( "id", "g" + targetID )
-								.attr( "fill-opacity", 0 );
+								.style( "fill-opacity", 0 );
 
-				clip( "clipL", group, "L" + targetID ).style( "fill", "white" );
+				//clip( "clipL", group, "L" + targetID ).style( "fill", "white" );
 				
 				clip( "clip", group, targetID ).on("mouseover", function (d) { mouseOverCall( "#g" + this.id , this.id ) } ) 
 								.on("mouseout", function (d) {  mouseOutCall("#g" + this.id, this.id); })
@@ -287,6 +287,8 @@ exports.BioJSVenn = function( target, lists ) {
 					return IntersectionSet[ d.id.toString() ].list.size() } )
 			.attr("x", function (d) { return d.textX } ).attr("y", function(d){ return d.textY });
 
+		var combination = combinationList[ jsonData.length - 1 ];
+
 		var clip = function ( reuseID, group, clipID ){
 
 				for ( var k = 0; k < combination[i][j].length; k++ ){
@@ -322,9 +324,10 @@ exports.BioJSVenn = function( target, lists ) {
 	};
 
 	this._updateGraph = function () {
-		if ( this._listSets.length - 1 != 6 ) {
+		if ( this._listSets.length - 1 != 6 ) 
 			drawEllipse( predefineShape[ this._listSets.length - 1 ] );
-		}
+		else
+			drawPath( predefineShape[ this._listSets.length - 1 ] );
 	};
 
 	this._generateAllIntersectSets = function ( start, end ){
@@ -389,7 +392,7 @@ exports.BioJSVenn = function( target, lists ) {
 	var StrokeWidth = 2;
 
 	var selectedShapeFillOpacity = 0.6;
-	var unselectedShapeFillOpacity = 0.3;
+	var unselectedShapeFillOpacity = 0.25;
 
 	var transform = [];
 
@@ -504,6 +507,7 @@ var data = { "list-1": ["A", "B", "C", "D" ],
 			 "list-3": ["A", "1", "2", "3", "4", "E", "F"],
 			 "list-4": ["A", "q", "w", "r", "4", "E", "F"],
 			 "list-5": ["A", "g", "w", "r", "E" ],
-			 "list-6": ["A", "g", "~" ] };
+			 "list-6": ["A", "g", "~" ],
+			 "list-7": ["A", "q", "l", "1" ] };
 
 var test = new exports.BioJSVenn( "first", data );
