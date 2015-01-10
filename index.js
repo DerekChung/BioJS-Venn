@@ -508,3 +508,7 @@ var data = { "list-1": ["A", "B", "C", "D" ],
 			 "list-7": ["A", "q", "l", "1" ] };
 
 var test = new exports.BioJSVenn( "first", data );
+
+exports.BioJSAutoVenn = function() {
+	
+}
