@@ -28,8 +28,6 @@ var VennPrototype = {
 			if ( ++counter > this._N ) {
 				break;
 			}
-			var arr = data[key];
-			alert( arr.length );
 			this._listSets[ counter ] = new sets.Set(data[key]);
 			this._name[ counter ] = key;
 		}
@@ -59,13 +57,12 @@ exports.BioJSVenn = function( target, lists ) {
 		  .style( "fill-opacity",  selectedShapeFillOpacity )
 		  .style( "stroke-opacity", selectedStrokeFillOpacity);
 
-		d3.select("tooltip").classed("hidden", false);
-
 		//Update the tooltip position and value
-		d3.select("#tooltip").transition()
+		var b = d3.select("#venntooltip").transition()
 		.style("left", (d3.event.pageX - 100) + "px")
 		.style("top", (d3.event.pageY - 100) + "px")
 		.style("position", "absolute")
+		.style("opacity", 0.5 )
 		.style("z-index", 9)  
 		.text( function (d) { 
 
@@ -76,6 +73,8 @@ exports.BioJSVenn = function( target, lists ) {
 			
 			return text;
 		});
+
+		var a = 1;
 	};
 
 	//call this when mouse out event is triggered
@@ -90,11 +89,11 @@ exports.BioJSVenn = function( target, lists ) {
 		  .style("stroke-opacity", unselectedStrokeFillOpacity );
        
        //Hide the tooltip
-		d3.select("#tooltip").classed("hidden", true); 
+		d3.select("#venntooltip").style("opacity", 0 ); 
 	};
 
 	var mouseMoveCall = function (traget) {
-		d3.select("#tooltip")
+		d3.select("#venntooltip")
 			.style("left", (d3.event.pageX - 100) + "px")
 			.style("top", (d3.event.pageY - 100) + "px")	
 	};
@@ -354,18 +353,23 @@ exports.BioJSVenn = function( target, lists ) {
 						.attr("width", w)
 						.attr("height", h);
 
-    tooltip = d3.select("body").append("div")
-    	.attr( "id", "tooltip" )
-    	.classed( "hidden", true )
-        .style("position", "absolute")
-        .style("text-align", "center")
-        .style("width", "220px")
-        .style("height", "220px")
-        .style("background", "#333")
-        .style("color", "#ddd")
-        .style("border", "0px")
-        .style("border-radius", "8px")
-        .style("opacity", 0);
+    var tooltip = d3.select("#" + target).append("div")
+		.attr( "id", "venntooltip" )
+		.style("position", "absolute")
+		.style("text-align", "center")
+		.style("width", "220px")
+		.style("height", "220px")
+		.style("background", "#333")
+		.style("color", "#ddd")
+		.style("border", "0px")
+		.style("border-radius", "8px")
+		.style("opacity", 0);
+
+	tooltip.append( "p" )
+		.append( "strong" ).attr("id", "vennToolTipTitle");
+
+	tooltip.append( "p" )
+		.attr("id", "vennToolTipList");
 
     this.updateAllList( lists );
 
