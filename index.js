@@ -665,7 +665,7 @@ exports.BioJSAutoVenn = function( target, lists ) {
 			.on("mouseout", function (d)  { mouseOutCall(this, d.id); })
 			.on("mousemove", function (d) { mouseMoveCall(this); });
 
-/*
+
 		var combination = combinationList[ num - 1 ];
 
 		var clip = function ( reuseID, group, clipID ){
@@ -699,7 +699,7 @@ exports.BioJSAutoVenn = function( target, lists ) {
 								.on("mousemove", function (d) { mouseMoveCall(this); });
 			}
 		}
-*/
+
 	}
 
 	this._updateGraph = function () {
