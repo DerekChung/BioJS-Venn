@@ -17,7 +17,22 @@ var VennPrototype = {
 
 	updateName: function ( targetList, name ){
 
+		var target = targetList;
 
+		if ( typeof target == 'string' || target instanceof String) {
+			for ( i = 1; i < this._listSets.length; i++ ) {
+				if ( target == this._listSets[i].name ) {
+					target = i;
+					break;
+				}
+			}
+			
+			if ( typeof target == 'string' || target instanceof String)
+				return;
+		}
+
+		if ( this._listSets[target] )
+			this._updateName( target, name );
 
 	},
 
