@@ -666,7 +666,7 @@ exports.BioJSAutoVenn = function( target, lists ) {
 			.on("mouseout", function (d)  { mouseOutCall(this, d.id); })
 			.on("mousemove", function (d) { mouseMoveCall(this); });
 
-/*
+
 		var combination = combinationList[ num - 1 ];
 
 		var clip = function ( reuseID, group, clipID ){
@@ -700,7 +700,7 @@ exports.BioJSAutoVenn = function( target, lists ) {
 								.on("mousemove", function (d) { mouseMoveCall(this); });
 			}
 		}
-*/
+
 	}
 
 	this._updateGraph = function () {
@@ -812,8 +812,8 @@ var data = { "list-1": ["A", "B", "C", "D" ],
 			 "list-3": ["A", "1", "2", "3", "4", "E", "F"],
 			 "list-4": ["A", "q", "w", "r", "4", "E", "F"],
 			 "list-5": ["A", "g", "w", "r", "E" ],
-			 "list-6": ["A", "g", "~" ],
-			 "list-7": ["A", "q", "l", "1" ] };
+			 "list-6": ["A", "g", "~" ]/*,
+			 "list-7": ["A", "q", "l", "1" ]*/ };
 
 var test = new exports.BioJSAutoVenn( "first", data );
 
