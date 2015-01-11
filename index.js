@@ -737,4 +737,6 @@ var test = new exports.BioJSVenn( "first", data );
 
 test.addList( "list-7", ["A", "q", "l", "1" ] );
 
-test.updateList( 0, [] )
+test.updateList( 0, ["A"] );
+
+test.updateName( 0, "happy" );
