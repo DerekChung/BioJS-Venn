@@ -4,6 +4,8 @@ var sets = require('simplesets')
 
 var VennPrototype = {
 
+	autoLayout: true,
+
 	readJSON: function( text ) {
 		
 		try {
@@ -46,133 +48,6 @@ exports.BioJSVenn = function( target, lists ) {
 
 	if ( !target )
 		return;
-
-	var drawVenn = function (num) {
-
-		var toRadian = function ( degree ) {
-			return degree * Math.PI / 180;
-		}
-
-		var rotateAngle = 360 / num;
-		var rotateRadian = toRadian( rotateAngle );
-		var baseRadian = toRadian( (180 - rotateAngle) / 2 );
-		var startAngle = 0;
-		var length = 42;
-		var rx = 220, ry = 110;
-		var hypotenuse;
-
-		if ( rotateAngle == 180 ) 
-			hypotenuse = length * 2;
-		else
-			hypotenuse = length / Math.sin( baseRadian ) * Math.sin( rotateRadian );
-
-		var x = 350, y = 300;
-
-		//for text
-		var tx = [], ty = [], tlength = [], thypotenuse = []; 
-		tx.push( x + rx * 0.9)
-		ty.push(300);
-		tlength.push( tx[0] - x + length);
-		if ( rotateAngle == 180 ) 
-			thypotenuse.push(length * 2);
-		else
-			thypotenuse.push(length / Math.sin( baseRadian ) * Math.sin( rotateRadian ));
-
-		var rx = 200, ry = 110;
-		var startingPoint = { "x": x, "y": y };
-
-		var shapePosition = [];
-
-		shapePosition.push( startingPoint );
-
-		for ( i = 0; i < num; i++ ) {
-			x += hypotenuse * Math.cos( (Math.PI - baseRadian) + rotateRadian * i );
-			y += hypotenuse * Math.sin( (Math.PI - baseRadian) + rotateRadian * i );
-			shapePosition.push( { "x": x, "y": y } );
-		}
-
-		var transformGroup = svg.append("g")
-								.attr( "transform", "scale(" + transform[num].scale + ") "
-										+ "translate(" + transform[num].x + ", "
-										+ transform[num].y + ")" )
-
-		var graphData = [];
-
-		for ( i = 0; i < num; i++ )
-			graphData.push( { "id": i + 1, "cx": shapePosition[i].x, "cy": shapePosition[i].y, "rotate": rotateAngle * i, "rx": 220, "ry": 110 } )
-
-
-		var defs = transformGroup.append( "defs" )
-								.selectAll("_")
-								.data(graphData)
-								.enter()
-								.append("g");
-
-		defs.append( "clipPath" )
-			.attr( "id", function (d) { return "clip" + d.id } )
-			.append( "ellipse" )
-			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
-			.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
-			.attr("rx", function (d) { return d.rx} ).attr("ry", function (d) { return d.ry } );
-
-
-		var shapeGroup = transformGroup.selectAll("_")
-									.data(graphData)
-									.enter()
-									.append( "g" );
-
-		shapeGroup.append( "ellipse" )
-			.attr( "id", function (d) { return "shape" + d.id } )
-			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
-			.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
-			.attr("rx", function (d) { return d.rx} ).attr("ry", function (d) { return d.ry } )
-			.style("fill", function (d) { return predefineColor[d.id] })
-			.style("fill-opacity", unselectedShapeFillOpacity )
-			.style("stroke-opacity", unselectedStrokeFillOpacity )
-			.style("stroke", predefineStrokeColor )
-			.style("stroke-width", StrokeWidth )
-			.on("mouseover", function (d) { mouseOverCall(this, d.id); })
-			.on("mouseout", function (d)  { mouseOutCall(this, d.id); })
-			.on("mousemove", function (d) { mouseMoveCall(this); });
-
-
-		var combination = combinationList;
-
-		var clip = function ( reuseID, group, clipID, i, j ){
-
-			for ( var k = 0; k < combination[i].length; k++ ){
-				group = group.append( "g" )
-							.attr( "clip-path", "url(#" + reuseID + combination[i][j][k] + ")" );
-			}
-
-			return group.append( "rect" )
-						.attr( "id", clipID )
-						.attr( "width", w ).attr( "height", h )
-						.attr( "x", 0 ).attr( "y", 0 )
-		}
-
-		for ( var i = 0; i < combination.length; i++ ) {
-
-			for ( var j = 0; j < combination[i].length; j++  ){
-				if ( combination[i][j].length == 1 )
-					continue;
-
-				var targetID = combination[i][j].join("∩");
-
-				var group = transformGroup.append( "g" )
-								.attr( "id", "g" + targetID )
-								.style( "fill-opacity", 0 );
-
-				//clip( "clipL", group, "L" + targetID ).style( "fill", "white" );
-				
-				clip( "clip", group, targetID, i, j ).on("mouseover", function (d) { mouseOverCall( "#g" + this.id , this.id ) } ) 
-								.on("mouseout", function (d) {  mouseOutCall("#g" + this.id, this.id); })
-								.on("mousemove", function (d) { mouseMoveCall(this); });
-			}
-		}
-
-	}
-
 
 	var generateCombination = function ( start, end ){
 		var ans = [];
@@ -285,13 +160,14 @@ exports.BioJSVenn = function( target, lists ) {
 			.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
 			.attr("rx", function (d) { return d.rx} ).attr("ry", function (d) { return d.ry } );
 
+		/* This part is used to create a fake Stroke for the clipping. However, this part is not longer used.
 		defs.append( "clipPath" )
 			.attr( "id", function (d) { return "clipL" + d.id } )
 			.append( "ellipse" )
 			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
 			.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
 			.attr("rx", function (d) { return d.rx + StrokeWidth} ).attr("ry", function (d) { return d.ry + StrokeWidth} );
-
+		*/
 		var shapeGroup = transformGroup.selectAll("_")
 									.data(jsonData)
 									.enter()
@@ -331,42 +207,6 @@ exports.BioJSVenn = function( target, lists ) {
 		drawClip( combinationList, transformGroup );
 		    
 	};
-
-	var drawClip = function ( combination, drawOn ) {
-
-		var clip = function ( reuseID, group, clipID, i, j ){
-
-			for ( var k = 0; k < combination[i].length; k++ ){
-				group = group.append( "g" )
-							.attr( "clip-path", "url(#" + reuseID + combination[i][j][k] + ")" );
-			}
-
-			return group.append( "rect" )
-						.attr( "id", clipID )
-						.attr( "width", w ).attr( "height", h )
-						.attr( "x", 0 ).attr( "y", 0 )
-		}
-
-		for ( var i = 0; i < combination.length; i++ ) {
-
-			for ( var j = 0; j < combination[i].length; j++  ){
-				if ( combination[i][j].length == 1 )
-					continue;
-
-				var targetID = combination[i][j].join("∩");
-
-				var group = drawOn.append( "g" )
-								.attr( "id", "g" + targetID )
-								.style( "fill-opacity", 0 );
-
-				//clip( "clipL", group, "L" + targetID ).style( "fill", "white" );
-				
-				clip( "clip", group, targetID, i, j ).on("mouseover", function (d) { mouseOverCall( "#g" + this.id , this.id ) } ) 
-								.on("mouseout", function (d) {  mouseOutCall("#g" + this.id, this.id); })
-								.on("mousemove", function (d) { mouseMoveCall(this); });
-			}
-		}
-	}
 
 	var drawPath = function ( jsonData ){
 
@@ -443,16 +283,167 @@ exports.BioJSVenn = function( target, lists ) {
 
 	};
 
+	var drawVenn = function (num) {
+
+		var toRadian = function ( degree ) {
+			return degree * Math.PI / 180;
+		}
+
+		var rotateAngle = 360 / num;
+		var rotateRadian = toRadian( rotateAngle );
+		var baseRadian = toRadian( (180 - rotateAngle) / 2 );
+		var startAngle = 0;
+		var length = 42;
+		var rx = 220, ry = 110;
+		var hypotenuse;
+
+		if ( rotateAngle == 180 ) 
+			hypotenuse = length * 2;
+		else
+			hypotenuse = length / Math.sin( baseRadian ) * Math.sin( rotateRadian );
+
+		var x = 350, y = 300;
+
+		//for text, here the variables are array. (for future extension)
+		var tx = [], ty = [], tlength = [], thypotenuse = []; 
+		tx.push( x + rx * 0.8)
+		ty.push( y );
+		tlength.push( tx[0] - x + length);
+		if ( rotateAngle == 180 ) 
+			thypotenuse.push(tlength[0] * 2);
+		else
+			thypotenuse.push(tlength[0] / Math.sin( baseRadian ) * Math.sin( rotateRadian ));
+
+		var rx = 200, ry = 110;
+
+		var shapePosition = [];
+		var textPosition = [];
+
+		shapePosition.push( { "x": x, "y": y } );
+		textPosition.push( { "x": tx[0], "y": ty[0] } )
+
+		for ( i = 0; i < num; i++ ) {
+			var nextX = shapePosition[i].x + hypotenuse * Math.cos( (Math.PI - baseRadian) + rotateRadian * i );
+			var nextY = shapePosition[i].y + hypotenuse * Math.sin( (Math.PI - baseRadian) + rotateRadian * i );
+			shapePosition.push( { "x": nextX, "y": nextY } );
+
+			var nextTextX = textPosition[i].x + thypotenuse[0] * Math.cos( (Math.PI - baseRadian) + rotateRadian * i );
+			var nextTextY = textPosition[i].y + thypotenuse[0] * Math.sin( (Math.PI - baseRadian) + rotateRadian * i );
+			textPosition.push( { "x": nextTextX, "y": nextTextY } );
+		}
+
+		var transformGroup = svg.append("g")
+								.attr( "transform", "scale(" + transform[num - 1].scale + ") "
+										+ "translate(" + transform[num - 1].x + ", "
+										+ transform[num - 1].y + ")" )
+
+		var graphData = [], textData = [];
+
+		for ( i = 0; i < num; i++ ) {
+			graphData.push( { "id": i + 1, "cx": shapePosition[i].x, "cy": shapePosition[i].y, "rotate": rotateAngle * i, "rx": 220, "ry": 110 } )
+			textData.push( { "id": i + 1, "x": textPosition[i].x , "y": textPosition[i].y } );
+		}
+
+		var defs = transformGroup.append( "defs" )
+								.selectAll("_")
+								.data(graphData)
+								.enter()
+								.append("g");
+
+		defs.append( "clipPath" )
+			.attr( "id", function (d) { return "clip" + d.id } )
+			.append( "ellipse" )
+			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
+			.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
+			.attr("rx", function (d) { return d.rx} ).attr("ry", function (d) { return d.ry } );
+
+
+		var shapeGroup = transformGroup.selectAll("_")
+									.data(graphData)
+									.enter()
+									.append( "g" );
+
+		shapeGroup.append( "ellipse" )
+			.attr( "id", function (d) { return "shape" + d.id } )
+			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
+			.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
+			.attr("rx", function (d) { return d.rx} ).attr("ry", function (d) { return d.ry } )
+			.style("fill", function (d) { return predefineColor[d.id] })
+			.style("fill-opacity", unselectedShapeFillOpacity )
+			.style("stroke-opacity", unselectedStrokeFillOpacity )
+			.style("stroke", predefineStrokeColor )
+			.style("stroke-width", StrokeWidth )
+			.on("mouseover", function (d) { mouseOverCall(this, d.id); })
+			.on("mouseout", function (d)  { mouseOutCall(this, d.id); })
+			.on("mousemove", function (d) { mouseMoveCall(this); });
+
+		drawClip( combinationList, transformGroup );
+
+		var textGroup = transformGroup.selectAll("_")
+									.data(textData)
+									.enter()
+									.append( "g" );
+
+		textGroup.append( "text" )
+				.attr( "id", function (d) { return "text" + d.id } )
+				.attr( "x", function (d) { return d.x } ).attr( "y", function (d) { return d.y } )
+				.text( function (d) {
+					if ( !IntersectionSet[ d.id.toString() ] )
+						return 0;
+					else
+						return IntersectionSet[ d.id.toString() ].list.size() 
+				} )
+	}
+
+	var drawClip = function ( combination, drawOn ) {
+
+		var clip = function ( reuseID, group, clipID, i, j ){
+
+			for ( var k = 0; k < combination[i].length; k++ ){
+				group = group.append( "g" )
+							.attr( "clip-path", "url(#" + reuseID + combination[i][j][k] + ")" );
+			}
+
+			return group.append( "rect" )
+						.attr( "id", clipID )
+						.attr( "width", w ).attr( "height", h )
+						.attr( "x", 0 ).attr( "y", 0 )
+		}
+
+		for ( var i = 0; i < combination.length; i++ ) {
+
+			for ( var j = 0; j < combination[i].length; j++  ){
+				if ( combination[i][j].length == 1 )
+					continue;
+
+				var targetID = combination[i][j].join("∩");
+
+				var group = drawOn.append( "g" )
+								.attr( "id", "g" + targetID )
+								.style( "fill-opacity", 0 );
+
+				//clip( "clipL", group, "L" + targetID ).style( "fill", "white" );
+				
+				clip( "clip", group, targetID, i, j ).on("mouseover", function (d) { mouseOverCall( "#g" + this.id , this.id ) } ) 
+								.on("mouseout", function (d) {  mouseOutCall("#g" + this.id, this.id); })
+								.on("mousemove", function (d) { mouseMoveCall(this); });
+			}
+		}
+	}
+
+
 	this._updateGraph = function () {
 
-		drawVenn( this._listSets.length - 1 );
-
-		/*
-		if ( this._listSets.length - 1 != 6 ) 
-			drawEllipse( predefineShape[ this._listSets.length - 1 ] );
-		else
-			drawPath( predefineShape[ this._listSets.length - 1 ] );
-		*/
+		svg.select("*").remove();
+		if ( this.autoLayout ){
+			drawVenn( this._listSets.length - 1 );
+		}
+		else{
+			if ( this._listSets.length - 1 != 6 ) 
+				drawEllipse( predefineShape[ this._listSets.length - 1 ] );
+			else
+				drawPath( predefineShape[ this._listSets.length - 1 ] );
+		}
 	};
 
 	this._generateAllIntersectSets = function ( start, end ){
@@ -494,23 +485,22 @@ exports.BioJSVenn = function( target, lists ) {
 			IntersectionSet[ key ] = { name: ans.lName[key], list: ans.list[key], combination: [] }
 		}
 
-		for ( i = 0; i < combinationList.length; i++ ){
-			for ( j = 0; j < combinationList[i].length; j++ ){
+		for ( i = 0; i < combinationList.length; i++ )
+			for ( j = 0; j < combinationList[i].length; j++ )
 				IntersectionSet[ combinationList[i][j].reverse().join("∩") ]["combination"] = combinationList[i][j];
-			}
-		}
 	};
 
 	this._updateName = function ( i, name ){
 		nameList[i] = name;
 	}
+
 	//predefine number of sets in Venn diagram.
 	//magic, don't touch
-
 	this._N = 7;
 	this._listSets = [];
 	var nameList = [];
 	var IntersectionSet;
+
 	/*
 		combinationList: this array is used for store all the combinations.
 		For example, there are 3 sets. The intersect set will be the combinations
@@ -608,7 +598,6 @@ exports.BioJSVenn = function( target, lists ) {
 
 	//define drawing canvas/
 	var w = 746, h = 900;
-
 	var svg = d3.select( "#" + target )
 						.append("svg")
 						.attr("width", w)
@@ -640,345 +629,13 @@ exports.BioJSVenn = function( target, lists ) {
 
 exports.BioJSVenn.prototype = VennPrototype;
 
-exports.BioJSAutoVenn = function( target, lists ) {
-	if ( !target )
-		return;
-
-	var generateCombination = function ( start, end ){
-		var ans = [];
-
-		for ( var i = end; i >= start; i-- ){
-			var result = [];
-			result.push( [ i ] );
-
-			for ( var j = 0; j < ans.length; j++ )
-				for ( var k = 0; k < ans[j].length; k++ )
-					result.push( ans[j][k].concat( [i] ) );
-
-			ans.push( result );
-		}
-
-		return ans;
-	}
-
-	//call this when mouse over event is triggered
-	var mouseOverCall = function ( target, id ){
-		d3.select(target).transition()
-		  .style( "fill-opacity",  function() {
-		  		if ( typeof id == 'string' || id instanceof String)
-		  			return 0.4;
-		  		else 
-		  			return selectedShapeFillOpacity;
-		  		}
-		  	)
-		  .style( "stroke-opacity", selectedStrokeFillOpacity);
-
-		//Update the tooltip position and value
-		d3.select("#vennToolTip").transition()
-		.style("left", (d3.event.pageX - 250) + "px")
-		.style("top", (d3.event.pageY - 5) + "px")
-		.style("position", "absolute")
-		.style("opacity", 0.6 )
-		.style("z-index", 9)
-
-		d3.select("#vennToolTipTitle")
-			.text( function (d) { 
-
-			var combination = IntersectionSet[ id ].combination;
-			var text =  nameList[ combination[0] ].name;
-
-			for ( i = 1; i < combination.length; i++ ){
-				text += " ∩ " + nameList[ combination[i] ].name;
-			}
-
-			var text = IntersectionSet[ id ].name + ":\n";
-			
-			return text;
-		});
-
-		d3.select( "#vennToolTipList" )
-			.text( function (d) {
-				var text = "";
-
-				if ( IntersectionSet[ id ] )
-					text += IntersectionSet[ id ].list.array().join("\n");
-				
-				return text;
-			} );
-	};
-
-	//call this when mouse out event is triggered
-	var mouseOutCall = function (target, id) {
-		d3.select(target).transition()
-			.style("fill-opacity", function () {
-		 		if ( typeof id == 'string' || id instanceof String)
-		  			return 0;
-		 		else 
-		 			return unselectedShapeFillOpacity;
-		  	})
-		 	.style("stroke-opacity", unselectedStrokeFillOpacity );
-       
-       //Hide the tooltip
-		d3.select("#vennToolTip").style("opacity", 0 ); 
-	};
-
-	var mouseMoveCall = function (traget) {
-		d3.select("#vennToolTip")
-			.style("left", (d3.event.pageX - 250) + "px")
-			.style("top", (d3.event.pageY - 5) + "px")	
-	};
-
-	var drawVenn = function (num) {
-
-		var toRadian = function ( degree ) {
-			return degree * Math.PI / 180;
-		}
-
-		var rotateAngle = 360 / num;
-		var rotateRadian = toRadian( rotateAngle );
-		var baseRadian = toRadian( (180 - rotateAngle) / 2 );
-		var startAngle = 0;
-		var length = 42;
-		var rx = 220, ry = 110;
-		var hypotenuse;
-
-		if ( rotateAngle == 180 ) 
-			hypotenuse = length * 2;
-		else
-			hypotenuse = length / Math.sin( baseRadian ) * Math.sin( rotateRadian );
-
-		var x = 350, y = 300;
-
-		//for text
-		var tx = [], ty = [], tlength = [], thypotenuse = []; 
-		tx.push( x + rx * 0.9)
-		ty.push(300);
-		tlength.push( tx[0] - x + length);
-		if ( rotateAngle == 180 ) 
-			thypotenuse.push(length * 2);
-		else
-			hypotenuse.push(length / Math.sin( baseRadian ) * Math.sin( rotateRadian ));
-
-		var rx = 200, ry = 110;
-		var startingPoint = { "x": x, "y": y };
-
-		var shapePosition = [];
-
-		shapePosition.push( startingPoint );
-
-		for ( i = 0; i < num; i++ ) {
-			x += hypotenuse * Math.cos( (Math.PI - baseRadian) + rotateRadian * i );
-			y += hypotenuse * Math.sin( (Math.PI - baseRadian) + rotateRadian * i );
-			shapePosition.push( { "x": x, "y": y } );
-		}
-
-		var transformGroup = svg.append("g")
-								.attr( "transform", "scale(" + transform.scale + ") "
-										+ "translate(" + transform.x + ", "
-										+ transform.y + ")" )
-
-		var graphData = [];
-
-		for ( i = 0; i < num; i++ )
-			graphData.push( { "id": i + 1, "cx": shapePosition[i].x, "cy": shapePosition[i].y, "rotate": rotateAngle * i, "rx": 220, "ry": 110 } )
-
-
-		var defs = transformGroup.append( "defs" )
-								.selectAll("_")
-								.data(graphData)
-								.enter()
-								.append("g");
-
-		defs.append( "clipPath" )
-			.attr( "id", function (d) { return "clip" + d.id } )
-			.append( "ellipse" )
-			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
-			.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
-			.attr("rx", function (d) { return d.rx} ).attr("ry", function (d) { return d.ry } );
-
-
-		var shapeGroup = transformGroup.selectAll("_")
-									.data(graphData)
-									.enter()
-									.append( "g" );
-
-		shapeGroup.append( "ellipse" )
-			.attr( "id", function (d) { return "shape" + d.id } )
-			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
-			.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
-			.attr("rx", function (d) { return d.rx} ).attr("ry", function (d) { return d.ry } )
-			.style("fill", function (d) { return predefineColor[d.id] })
-			.style("fill-opacity", unselectedShapeFillOpacity )
-			.style("stroke-opacity", unselectedStrokeFillOpacity )
-			.style("stroke", predefineStrokeColor )
-			.style("stroke-width", StrokeWidth )
-			.on("mouseover", function (d) { mouseOverCall(this, d.id); })
-			.on("mouseout", function (d)  { mouseOutCall(this, d.id); })
-			.on("mousemove", function (d) { mouseMoveCall(this); });
-
-
-		var combination = combinationList;
-
-		var clip = function ( reuseID, group, clipID, i, j ){
-
-			for ( var k = 0; k < combination[i].length; k++ ){
-				group = group.append( "g" )
-							.attr( "clip-path", "url(#" + reuseID + combination[i][j][k] + ")" );
-			}
-
-			return group.append( "rect" )
-						.attr( "id", clipID )
-						.attr( "width", w ).attr( "height", h )
-						.attr( "x", 0 ).attr( "y", 0 )
-		}
-
-		for ( var i = 0; i < combination.length; i++ ) {
-
-			for ( var j = 0; j < combination[i].length; j++  ){
-				if ( combination[i][j].length == 1 )
-					continue;
-
-				var targetID = combination[i][j].join("∩");
-
-				var group = transformGroup.append( "g" )
-								.attr( "id", "g" + targetID )
-								.style( "fill-opacity", 0 );
-
-				//clip( "clipL", group, "L" + targetID ).style( "fill", "white" );
-				
-				clip( "clip", group, targetID, i, j ).on("mouseover", function (d) { mouseOverCall( "#g" + this.id , this.id ) } ) 
-								.on("mouseout", function (d) {  mouseOutCall("#g" + this.id, this.id); })
-								.on("mousemove", function (d) { mouseMoveCall(this); });
-			}
-		}
-
-	}
-
-	this._updateGraph = function () {
-		drawVenn( this._listSets.length - 1 )
-	};
-
-	this._generateAllIntersectSets = function ( start, end ){
-
-		var ans = {};
-		var name = {};
-
-		for ( var i = end; i >= start; i-- ) {
-			var result = {};
-			var name_result = {};
-
-			if ( this._listSets[i] ) {
-				result[ i.toString() ] = this._listSets[i].list;
-				name_result[ i.toString() ] = this._listSets[i].name;
-			}
-
-			for ( var key in ans ){
-				if ( this._listSets[ i ] ) {
-					result[i.toString() + "∩" + key] = ans[key].intersection( this._listSets[ i ].list );
-					name_result[i.toString() + "∩" + key] = this._listSets[i].name + " ∩ " + name[ key ];
-				}
-			}
-			for (var attrname in result) { ans[attrname] = result[attrname]; }
-			for (var attrname in name_result) { name[attrname] = name_result[attrname]; }
-		}
-
-		combinationList.length = 0;
-		
-		combinationList = generateCombination( start, end );
-
-		return { list: ans, lName: name};
-	}; 
-
-	this._updateIntersectSets = function ( ans ) {
-
-		IntersectionSet = {};
-
-		for ( key in ans.list ) {
-			IntersectionSet[ key ] = { name: ans.lName[key], list: ans.list[key], combination: [] }
-		}
-
-		for ( i = 0; i < combinationList.length; i++ ){
-			for ( j = 0; j < combinationList[i].length; j++ ){
-				IntersectionSet[ combinationList[i][j].reverse().join("∩") ]["combination"] = combinationList[i][j];
-			}
-		}
-	};
-
-	this._updateName = function ( i, name ){
-		nameList[i] = name;
-	}
-
-	this._N = 7;
-	
-	this._listSets = [];
-	var nameList = [];
-
-	var IntersectionSet;
-	/*
-		combinationList: this array is used for store all the combinations.
-		For example, there are 3 sets. The intersect set will be the combinations
-		of these 3 sets. 
-	*/
-	var combinationList = [];
-
-	var predefineColor = [];
-	var predefineIntersectPath = [];
-	var predefineShape = [];
-
-	var predefineStrokeColor = "#259286";
-
-	var selectedStrokeFillOpacity = 1;
-	var unselectedStrokeFillOpacity = 0;
-
-	var StrokeWidth = 2;
-
-	var selectedShapeFillOpacity = 0.8;
-	var unselectedShapeFillOpacity = 0.5;
-
-	var transform = { x: 0, y: 0, scale: 1 };
-
-	predefineColor = [ "", "red", "orange", "yellow", "green", "blue", "indigo", "violet", "brown" ];
-
-	//define drawing canvas/
-	var w = 746, h = 900;
-
-	var svg = d3.select( "#" + target )
-						.append("svg")
-						.attr("width", w)
-						.attr("height", h);
-
-    var tooltip = d3.select("body").append("div")
-		.attr( "id", "vennToolTip" )
-		.style("position", "absolute")
-		.style("text-align", "center")
-		.style("width", "220px")
-		.style("background", "#333")
-		.style("color", "#ddd")
-		.style("border", "0px")
-		.style("border-radius", "8px")
-		.style("opacity", 0);
-
-	tooltip.append( "p" )
-		.append( "strong" ).attr("id", "vennToolTipTitle").style( "color", "white" );
-
-	tooltip.append( "p" )
-		.attr("id", "vennToolTipList").style( "color", "white" );
-
-	for ( var i = 1; i <= this._N; i++ )
-		combinationList.push( generateCombination( 1, i ) );
-    
-    this.updateAllList( lists );
-}
-
-exports.BioJSAutoVenn.prototype = VennPrototype;
-
 var data = { "list-1": ["A", "B", "C", "D" ],
 			 "list-2": ["A", "B", "D", "E", "F" ],
 			 "list-3": ["A", "1", "2", "3", "4", "E", "F"],
-			 "list-4": ["A", "q", "w", "r", "4", "E", "F"]/*,
+			 "list-4": ["A", "q", "w", "r", "4", "E", "F"],
 			 "list-5": ["A", "g", "w", "r", "E" ],
 			 "list-6": ["A", "g", "~" ],
-			 "list-7": ["A", "q", "l", "1" ]*/ };
+			 "list-7": ["A", "q", "l", "1" ] };
 
 var test = new exports.BioJSVenn( "first", data );
 
