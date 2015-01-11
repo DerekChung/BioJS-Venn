@@ -6,6 +6,37 @@ var VennPrototype = {
 
 	autoLayout: true,
 
+	switchToAutoMode: function () {
+		this.autoLayout = true;
+		this._updateGraph();
+	},
+
+	switchToPredfinedMode: function () {
+		this.autoLayout = false;
+		this._updateGraph();
+	},
+
+	updateName: function ( targetList, name ){
+
+		var target = targetList;
+
+		if ( typeof target == 'string' || target instanceof String) {
+			for ( i = 1; i < this._listSets.length; i++ ) {
+				if ( target == this._listSets[i].name ) {
+					target = i;
+					break;
+				}
+			}
+			
+			if ( typeof target == 'string' || target instanceof String)
+				return;
+		}
+
+		if ( this._listSets[target] )
+			this._updateName( target, name );
+
+	},
+
 	readJSON: function( text ) {
 		
 		try {
@@ -116,8 +147,8 @@ exports.BioJSVenn = function( target, lists ) {
 	var mouseOutCall = function (target, id) {
 		d3.select(target).transition()
 			.style("fill-opacity", function () {
-		 		if ( typeof id == 'string' || id instanceof String)
-		  			return 0;
+				if ( typeof id == 'string' || id instanceof String)
+					return 0;
 		 		else 
 		 			return unselectedShapeFillOpacity;
 		  	})
@@ -304,7 +335,7 @@ exports.BioJSVenn = function( target, lists ) {
 
 		var x = 350, y = 300;
 
-		//for text, here the variables are array. (for future extension)
+		//Setup for text, here the variables are array. (for future extension)
 		var tx = [], ty = [], tlength = [], thypotenuse = []; 
 		tx.push( x + rx * 0.8)
 		ty.push( y );
@@ -393,6 +424,23 @@ exports.BioJSVenn = function( target, lists ) {
 					else
 						return IntersectionSet[ d.id.toString() ].list.size() 
 				} )
+
+		if ( num >= 2 ) {
+			var allIntersectText = "1"
+			for ( i = 2; i <= num; i++ ) {
+				allIntersectText += "∩" + i
+			}
+
+			transformGroup.append( "text" )
+				.attr( "id", "text" + allIntersectText )
+				.attr( "x", x - length ).attr( "y", y )
+				.text( function () {
+					if ( !IntersectionSet[ allIntersectText ] )
+						return 0;
+					else
+						return IntersectionSet[ allIntersectText ].list.size() 
+				} )
+		}
 	}
 
 	var drawClip = function ( combination, drawOn ) {

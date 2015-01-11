@@ -423,6 +423,23 @@ exports.BioJSVenn = function( target, lists ) {
 					else
 						return IntersectionSet[ d.id.toString() ].list.size() 
 				} )
+
+		if ( num >= 2 ) {
+			var allIntersectText = "1"
+			for ( i = 2; i <= num; i++ ) {
+				allIntersectText += "∩" + i
+			}
+
+			transformGroup.append( "text" )
+				.attr( "id", "text" + allIntersectText )
+				.attr( "x", x - length ).attr( "y", y )
+				.text( function () {
+					if ( !IntersectionSet[ allIntersectText ] )
+						return 0;
+					else
+						return IntersectionSet[ allIntersectText ].list.size() 
+				} )
+		}
 	}
 
 	var drawClip = function ( combination, drawOn ) {
