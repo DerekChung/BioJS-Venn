@@ -414,13 +414,50 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 	var mouseOverCall = function ( target, id ){
 		d3.select(target).transition()
 			.style( "fill-opacity",  function() {
-		  		if ( typeof id == 'string' || id instanceof String)
-					return 0.4;
-		  		else 
-		  			return selectedShapeFillOpacity;
-		  		}
-		  	)
-		  .style( "stroke-opacity", selectedStrokeFillOpacity);
+				if ( typeof id == 'string' || id instanceof String)
+					return 0.55;
+				else 
+					return selectedShapeFillOpacity;
+				}
+			)
+			.style( "stroke-opacity", selectedStrokeFillOpacity);
+
+
+		var combination = IntersectionSet[ id ].combination;
+
+		if ( typeof id == 'string' || id instanceof String) {
+
+
+
+			var selectedSet = IntersectionSet[ id ].list;
+			var intersectSetSize = selectedSet.size();
+
+			d3.select( "#text" + id ).transition()
+				.style( "fill", "white" );
+
+			if ( intersectSetSize != 0 ) {
+				var sizeRecord = [];
+
+				for ( i = 0; i < combination.length; i++ ){
+					var target =  IntersectionSet[ combination[i].toString() ].list
+					var targetSize = target.size()
+					sizeRecord.push( {index: combination[i], size: selectedSet.intersection( target ).size(), osize: targetSize } )
+				}
+
+				for ( i = 0; i < sizeRecord.length; i++ ) {
+					var targetIndex = sizeRecord[i].index;
+					var ratio = sizeRecord[i].size / sizeRecord[i].osize;
+
+					d3.select( "#shape" + targetIndex ).transition()
+						.style( "fill-opacity",  function() {
+
+							var temp = (selectedShapeFillOpacity - unselectedShapeFillOpacity) * ratio;
+
+							return unselectedShapeFillOpacity + temp;
+						} )
+				}
+			}
+		}
 
 		//Update the tooltip position and value
 		d3.select("#vennToolTip").transition()
@@ -432,8 +469,6 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 		d3.select("#vennToolTipTitle")
 			.text( function (d) { 
-
-			var combination = IntersectionSet[ id ].combination;
 
 			return getNameByCombination( combination ) + ":";
 		});
@@ -480,8 +515,27 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		  	})
 		 	.style("stroke-opacity", unselectedStrokeFillOpacity );
        
+		var combination = IntersectionSet[ id ].combination;
+
+		if ( typeof id == 'string' || id instanceof String) {
+
+			var selectedSet = IntersectionSet[ id ].list;
+			var intersectSetSize = selectedSet.size();
+
+			d3.select( "#text" + id ).transition()
+				.style( "fill", "black" );
+
+			if ( intersectSetSize != 0 ) {
+
+				for ( i = 0; i < combination.length; i++ ){
+					d3.select( "#shape" + combination[i] ).transition()
+						.style( "fill-opacity", unselectedShapeFillOpacity );
+				}
+			}
+		}
+
        //Hide the tooltip
-		d3.select("#vennToolTip").style("opacity", 0 ); 
+		d3.select("#vennToolTip").transition().style("opacity", 0 ); 
 	};
 
 	var mouseMoveCall = function (traget) {
@@ -650,7 +704,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 				.enter()
 				.append( "g" )
 				.append( "text" )
-				.attr( "id", function (d) { return d.id } )
+				.attr( "id", function (d) { return "text" + d.id } )
 				.attr( "x", function (d) { return d.textX } ).attr("y", function(d){ return d.textY })
 				.text( function (d){
 					if ( !IntersectionSet[ d.id.toString() ] )
