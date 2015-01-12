@@ -58,17 +58,26 @@
 
 		 		<div id="container">
 					   <!-- <textarea id = "title1" class="form-control status-box" rows="1" placeholder="First List name"></textarea> -->
-					<div id = "title1">List 1</div>
+					<div class="selectMode">
+						<label class="radio-inline">
+							<input id="radio-inline-predefine" type="radio" name="optradio">predefined Mode
+						</label>
+						<label class="radio-inline">
+							<input id="radio-inline-auto" type="radio" name="optradio">Automatic Mode
+						</label>
+					</div>
+
+					<div> <input id="title1" type="text" value="List 1"> </div>
 					<div class="List-group-1">
-					   <textarea  id = "s1" class="form-control status-box genelist" rows="5" placeholder="Please put first list here"></textarea>
+					   <textarea  id = "s1" class="form-control status-box genelist" rows="4" placeholder="Please put first list here"></textarea>
 					</div>
 
 					<div class="List-group-2-label">
 						<!-- <textarea id = "title2" class="form-control status-box" rows="1" placeholder="Second List name"></textarea> -->
 					</div>
-					  <div id = "title2">List 2</div>
+					  <div> <input id="title2" type="text" value="List 2"> </div>
 					  <div class="List-group-2">
-					   	<textarea id = "s2" class="form-control genelist" rows="5" placeholder="Please put second list here"></textarea>
+					   	<textarea id = "s2" class="form-control genelist" rows="4" placeholder="Please put second list here"></textarea>
 
 					  </div>
 
@@ -77,9 +86,9 @@
 					  <!--  <textarea id = "title3" class="form-control status-box" rows="1" placeholder="Third List name"></textarea> -->
 					  
 					  </div>
-					  <div id = "title3">List 3</div>
+					  <div> <input id="title3" type="text" value="List 3"> </div>
 					  <div class="List-group-3">
-					   	<textarea id = "s3" class="form-control genelist" rows="5" placeholder="Please put third list here"></textarea>
+					   	<textarea id = "s3" class="form-control genelist" rows="4" placeholder="Please put third list here"></textarea>
 
 					  </div>
 
@@ -88,66 +97,31 @@
 					   <!-- <textarea id = "title4" class="form-control status-box" rows="1" placeholder="Fourth List name"></textarea> -->
 					  
 					  </div>
-					  <div id = "title4">List 4</div>
+					  <div> <input id="title4" type="text" value="List 4"> </div>
 					  <div class="List-group-4">
-					   	<textarea id = "s4" class="form-control genelist" rows="5" placeholder="Please put fourth list here"></textarea>
+					   	<textarea id = "s4" class="form-control genelist" rows="4" placeholder="Please put fourth list here"></textarea>
 
 					  </div>
 
-					  <div id = "title5">List 5</div>
+					  <div> <input id="title5" type="text" value="List 5"> </div>
 					  <div class="List-group-5">
-					   	<textarea id = "s5" class="form-control genelist" rows="5" placeholder="Please put fifth list here"></textarea>
+					   	<textarea id = "s5" class="form-control genelist" rows="4" placeholder="Please put fifth list here"></textarea>
 					  </div>
 
-					  <div id = "title6">List 6</div>
+					  <div> <input id="title6" type="text" value="List 6"> </div>
 					  <div class="List-group-6">
-					   	<textarea id = "s6" class="form-control genelist" rows="5" placeholder="Please put sixth list here"></textarea>
+					   	<textarea id = "s6" class="form-control genelist" rows="4" placeholder="Please put sixth list here"></textarea>
 					  </div>
 
-					  <div id = "title7">List 7</div>
+					  <div> <input id="title7" type="text" value="List 7"> </div>
 					  <div class="List-group-7">
-					   	<textarea id = "s7" class="form-control genelist" rows="5" placeholder="Please put seventh list here"></textarea>
+					   	<textarea id = "s7" class="form-control genelist" rows="4" placeholder="Please put seventh list here"></textarea>
 					  </div>
 
 					</div>
 
 					<div class="btn btn-default btn-file">
 						Browser <input type="file" id="files" name="file" data-filename-placement="inside">
-					</div>
-		 			
-		 			<div id = "output-list-checkbox">
-			 			<label class="checkbox-inline">
-	  						<input type="checkbox" id="inlineCheckbox1" value="option1" disabled> 1
-						</label>
-						
-						<label class="checkbox-inline">
-	  						<input type="checkbox" id="inlineCheckbox2" value="option2" disabled> 2
-						</label>
-						
-						<label class="checkbox-inline">
-	  						<input type="checkbox" id="inlineCheckbox3" value="option3" disabled> 3
-						</label>
-
-						<label class="checkbox-inline">
-	  						<input type="checkbox" id="inlineCheckbox4" value="option4" disabled> 4
-						</label>
-
-			 			<label class="checkbox-inline">
-	  						<input type="checkbox" id="inlineCheckbox5" value="option5" disabled> 5
-						</label>
-						
-						<label class="checkbox-inline">
-	  						<input type="checkbox" id="inlineCheckbox6" value="option6" disabled> 6
-						</label>
-						
-						<label class="checkbox-inline">
-	  						<input type="checkbox" id="inlineCheckbox7" value="option7" disabled> 7
-						</label>					
-
-					</div>
-
-					<div class="output-list">
-						<textarea id="union-set-list" class="form-control genelist" rows="5" placeholder="selected lists' union" readonly></textarea>
 					</div>
 
 	 		</div>
@@ -158,8 +132,48 @@
 
 				
 				</div>
-		 		
-			</div>
+
+					<div id = "output-list-checkbox">
+						<label class="checkbox-inline">
+							<input type="checkbox" id="inlineCheckbox1" value="option1" disabled> 
+							<label id="inlineCheckboxLabel1">List 1</label>
+						</label>
+						
+						<label class="checkbox-inline">
+								<input type="checkbox" id="inlineCheckbox2" value="option2" disabled>
+								<label id="inlineCheckboxLabel2">List 2</label>
+						</label>
+						
+						<label class="checkbox-inline">
+								<input type="checkbox" id="inlineCheckbox3" value="option3" disabled>
+								<label id="inlineCheckboxLabel2">List 3</label>
+						</label>
+
+						<label class="checkbox-inline">
+								<input type="checkbox" id="inlineCheckbox4" value="option4" disabled>
+								<label id="inlineCheckboxLabel2">List 4</label>
+						</label>
+
+							<label class="checkbox-inline">
+								<input type="checkbox" id="inlineCheckbox5" value="option5" disabled>
+								<label id="inlineCheckboxLabel2">List 5</label>
+						</label>
+						
+						<label class="checkbox-inline">
+								<input type="checkbox" id="inlineCheckbox6" value="option6" disabled>
+								<label id="inlineCheckboxLabel2">List 6</label>
+						</label>
+						
+						<label class="checkbox-inline">
+								<input type="checkbox" id="inlineCheckbox7" value="option7" disabled>
+								<label id="inlineCheckboxLabel2">List 7</label>
+						</label>					
+					</div>
+
+					<div class="output-list">
+						<textarea id="intersectSetList" class="form-control genelist" rows="5" placeholder="selected lists' intersect" readonly></textarea>
+					</div>
+				</div>
 	 		
 	 		
 	 		

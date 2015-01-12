@@ -1,10 +1,153 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+
+require( "d3" );
+
+var biojsVenn = require( "./BioJSVenn" );
+
+venn = new biojsVenn.BioJSVenn( "first", "intersectSetList" );
+
+var N = venn.getMaxVennSets();
+
+//read in file
+d3.select("#files").on("change" ,function() {
+	var files = this.files;
+	if (!files.length) { return; }
+
+	var file = files[0];
+	var reader = new FileReader();
+
+	reader.onloadend = function(evt) {
+		if (evt.target.readyState == FileReader.DONE) { // DONE == 2
+			try{
+				var data = evt.target.result;
+				venn.readJSON( data );
+				
+				data = JSON.parse(evt.target.result);
+				
+				var counter = 0;
+				for ( key in data ) {
+					var text = data[key].join("\n");
+					d3.select( "#s" + ++counter).node().value = text;
+					d3.select( "#title" + counter ).attr( "value", key);
+					d3.select( "#inlineCheckboxLabel" + counter ).text( key );
+					d3.select( "#inlineCheckbox" + counter ).node().disabled = false;
+				}
+
+				for ( var i = counter + 1; i <= N; i++ ){
+					d3.select("#s" + ++counter).node().value = "";
+					d3.select("#inlineCheckbox" + counter ).node().disabled = true;
+				}
+
+			} catch(e) {
+				alert("Not a JSON file.");
+			}
+		}
+	};
+
+	var blob = file.slice( 0, file.size);
+	reader.readAsBinaryString(blob);
+});
+
+//output the union list
+function checkboxUpdate() {
+
+	var target = [];
+	var start;
+
+	for ( start = 1; start <= N; start++ ) {
+		if ( d3.select( "#inlineCheckbox" + start ).node().checked ) {
+			target.push( start );
+			break; 
+		}
+	}
+
+	for ( var i = start + 1; i <= N; i++ ) 
+		if ( d3.select( "#inlineCheckbox" + i ).node().checked )
+			target.push( i );
+	
+	var intersectionSet = venn.getRequiredList( target );
+
+	if ( intersectionSet )
+		d3.select("#intersectSetList").node().value = intersectionSet.array().join("\n");
+	else
+		d3.select("#intersectSetList").node().value = "";
+}
+
+for ( i = 1; i <= N; i++ ){
+	var changeCallback = checkboxUpdate;
+	d3.select( "#inlineCheckbox" + i ).on( "change", checkboxUpdate );
+}
+
+//take user input from textarea
+//once the value changed it calls fucntion update to update the list
+//---
+function listUpdate( index ) {
+	return function() {
+
+		if ( index > venn.getNumberOfSets() ) {
+			for ( var i = venn.getNumberOfSets() + 1; i < index; i++ )
+				venn.addList( d3.select( "#title" + i ).node().value, [] );
+
+			venn.addList( d3.select( "#title" + index ).node().value, this.value.split("\n") );
+		}
+		else
+			venn.updateList( index - 1, d3.select( "#title" + index ).node().value, this.value.split("\n") );
+
+		for ( var i = 1; i <= N; i++ )
+			d3.select( "#inlineCheckbox" + i ).node().disabled = false;
+
+		for ( var i = N; i >= 1; i-- ) {
+
+			if ( d3.select( "#s" + i ).node().value != "" )
+				return;
+			
+			d3.select( "#inlineCheckbox" + i ).node().disabled = true;
+		}
+	}
+}
+
+for ( i = 1; i <= N; i++ ){
+	var changeCallback = listUpdate( i );
+	d3.select( "#s" + i ).on( "change", changeCallback );
+}
+
+function titleUpdate( index ){
+	return function() {
+		venn.updateListName( index - 1, this.value );
+
+		d3.select( "#inlineCheckboxLabel" + index ).text( this.value );
+	}
+}
+
+for ( i = 1; i <= N; i++ ){
+	var titleUpdateCall = titleUpdate( i );
+	d3.select( "#title" + i ).on( "change", titleUpdateCall );
+}
+
+d3.select( "#radio-inline-predefine" ).on( "change", function() { 
+								if ( this.checked ) 
+									venn.switchToPredfinedMode(); 
+							} );
+
+d3.select( "#radio-inline-auto" ).on( "change", function () {
+								if ( this.checked )
+									venn.switchToAutoMode();
+							} );
+},{"./BioJSVenn":2,"d3":3}],2:[function(require,module,exports){
 require('d3');
 var sets = require('simplesets')
 
 var VennPrototype = {
 
 	autoLayout: false,
+
+	getNumberOfSets: function () {
+		return this._listSets.length;
+	},
+
+	getMaxVennSets: function () {
+		return this._N;
+	},
 
 	switchToAutoMode: function () {
 		this.autoLayout = true;
@@ -16,7 +159,7 @@ var VennPrototype = {
 		this._updateGraph();
 	},
 
-	updateName: function ( index, name ){
+	updateListName: function ( index, name ){
 
 		if ( this._listSets[index] )
 			this._updateName( index, name );
@@ -39,8 +182,10 @@ var VennPrototype = {
 				var intersectSets = this._getIntersectSets()
 
 				if ( intersectSets ){
-					if ( intersectSets[requireKey] )
+					if ( intersectSets[requireKey] ) {
+						this._lastRequireSet = requireKey;
 						return intersectSets[requireKey].list;
+					}
 				}
 			}
 		}
@@ -70,18 +215,27 @@ var VennPrototype = {
 		return this._getIntersectSets();
 	},
 
-	updateList: function ( index, list, name ){
+	updateList: function ( index, name, list ){
 
 		if ( this._listSets[index] ) {
 			
-			this._listSets[index].list = new sets.Set( list );
+			if ( list.length == 1 && list[0] == ""  )
+				this._listSets[index].list = new sets.Set();
+			else
+				this._listSets[index].list = new sets.Set( list );
 
 			if ( name )
 				this._updateName( index, name );
 
-			if ( list.length == 0 ) {
-				if ( index == this._listSets[index].length ) {
-					this._listSets[index].pop()
+			if ( list.length == 0 || (list.length == 1 && list[0] == "" ) ) {
+				if ( index + 1 == this._listSets.length ) {
+
+					for ( var i = index; i >= 0; i-- ){
+						if ( this._listSets[i].list.size() == 0 || (this._listSets[i].list.size() == 1 && this._listSets[i].list.array()[0] == "" ) )
+							this._listSets.pop();
+						else
+							break;
+					}
 					var ans = this._generateAllIntersectSets( );
 					
 					this._updateIntersectSets( ans );
@@ -106,7 +260,11 @@ var VennPrototype = {
 		if ( this._listSets.length  == this._N )
 			return;
 
-		this._listSets.push( { name: name, list: new sets.Set( list ) } );
+		if ( list.length == 1 && list[0] == "" )
+			this._listSets.push( { name: name, list: new sets.Set() } );
+		else
+			this._listSets.push( { name: name, list: new sets.Set( list ) } );
+		
 		this._updateName( this._listSets.length - 1, name )
 		var ans = this._generateAllIntersectSets();
 		
@@ -151,7 +309,7 @@ var VennPrototype = {
 	}
 }
 
-exports.BioJSVenn = function( target, lists ) {
+exports.BioJSVenn = function( target, output, lists ) {
 
 	if ( !target )
 		return;
@@ -171,6 +329,37 @@ exports.BioJSVenn = function( target, lists ) {
 		}
 
 		return ans;
+	}
+
+	var mouseClickCall = function ( id ) {
+
+
+		var combination = IntersectionSet[ id ].combination;
+		var text = "";
+		/*
+		if ( nameList[ combination[0] - 1 ] )
+			text =  nameList[ combination[0] - 1 ];
+		*/
+		text =  nameList[ combination[0] - 1 ];
+
+		for ( i = 1; i < combination.length; i++ ){
+			/*
+			if ( !nameList[ combination[i] - 1] )
+				continue;
+			*/
+			if ( text != "" )
+				text += " ∩ " + nameList[ combination[i] - 1 ];
+			else
+				text += nameList[ combination[i] - 1 ];
+		}
+
+		text += ":\n";
+
+		if ( IntersectionSet[ id ] )
+			if ( IntersectionSet[ id ].list.size() > 0 )
+				text +=	IntersectionSet[ id ].list.array().join("\n") ;
+
+		d3.select( "#" + outputList ).node().value = text;
 	}
 
 	//call this when mouse over event is triggered
@@ -305,7 +494,8 @@ exports.BioJSVenn = function( target, lists ) {
 				.style("stroke-width", StrokeWidth )
 				.on("mouseover", function (d) { mouseOverCall(this, d.id); })
 				.on("mouseout", function (d)  { mouseOutCall(this, d.id); })
-				.on("mousemove", function (d) { mouseMoveCall(this); });
+				.on("mousemove", function (d) { mouseMoveCall(this); })
+				.on("click", function (d) { mouseClickCall( d.id ) } );
 
 		shapeGroup.append( "text" )
 				.attr( "id", function (d) { return "text" + d.id } )
@@ -382,7 +572,8 @@ exports.BioJSVenn = function( target, lists ) {
 				.style("stroke-width", StrokeWidth )
 				.on("mouseover", function (d) {  mouseOverCall(this, d.id); })
 				.on("mouseout", function (d) {  mouseOutCall(this, d.id); })
-				.on("mousemove", function (d) { mouseMoveCall(this); });
+				.on("mousemove", function (d) { mouseMoveCall(this); })
+				.on("click", function (d) { mouseClickCall( d.id ) } );
 
 		shapeGroup.append( "text" )
 			.attr( "id", function (d){ return "text" + d.id } )
@@ -514,7 +705,8 @@ exports.BioJSVenn = function( target, lists ) {
 			.style("stroke-width", StrokeWidth )
 			.on("mouseover", function (d) { mouseOverCall(this, d.id); })
 			.on("mouseout", function (d)  { mouseOutCall(this, d.id); })
-			.on("mousemove", function (d) { mouseMoveCall(this); });
+			.on("mousemove", function (d) { mouseMoveCall(this); })
+			.on("click", function (d) { mouseClickCall( d.id ) } );
 
 		drawClip( combinationList, transformGroup );
 
@@ -581,9 +773,10 @@ exports.BioJSVenn = function( target, lists ) {
 
 				//clip( "clipL", group, "L" + targetID ).style( "fill", "white" );
 				
-				clip( "clip", group, targetID, i, j ).on("mouseover", function (d) { mouseOverCall( "#g" + this.id , this.id ) } ) 
-								.on("mouseout", function (d) {  mouseOutCall("#g" + this.id, this.id); })
-								.on("mousemove", function (d) { mouseMoveCall(this); });
+				clip( "clip", group, targetID, i, j ).on("mouseover", function () { mouseOverCall( "#g" + this.id , this.id ) } ) 
+								.on("mouseout", function () {  mouseOutCall("#g" + this.id, this.id); })
+								.on("mousemove", function () { mouseMoveCall(this); })
+								.on("click", function () { mouseClickCall( this.id ) } );
 			}
 		}
 	}
@@ -666,6 +859,8 @@ exports.BioJSVenn = function( target, lists ) {
 	this._getIntersectSets = function(){
 		return IntersectionSet;
 	}
+
+	this._lastRequireSet = "";
 
 	//predefine number of sets in Venn diagram.
 	this._N = 7;
@@ -814,6 +1009,8 @@ exports.BioJSVenn = function( target, lists ) {
 						.attr("width", w)
 						.attr("height", h);
 
+	var outputList = output;
+
     var tooltip = d3.select("body").append("div")
 		.attr( "id", "vennToolTip" )
 		.style("position", "absolute")
@@ -834,27 +1031,13 @@ exports.BioJSVenn = function( target, lists ) {
 	tooltip.append( "div" )
 		.attr("id", "vennToolTipList").style( "color", "white" );
     
-    this.updateAllList( lists );
+    if ( lists )
+    	this.updateAllList( lists );
 
 }
 
 exports.BioJSVenn.prototype = VennPrototype;
-
-var data = { "list-1": ["A", "B", "C", "D" ],
-			 "list-2": ["A", "B", "D", "E", "F" ],
-			 "list-3": ["A", "1", "2", "3", "4", "E", "F"],
-			 "list-4": ["A", "q", "w", "r", "4", "E", "F"],
-			 "list-5": ["A", "g", "w", "r", "E" ],
-			 "list-6": ["A", "g", "~" ] };
-
-var test = new exports.BioJSVenn( "first", data );
-
-test.addList( "list-7", ["A", "q", "l", "1" ] );
-
-test.updateList( 0, ["A"] );
-
-test.updateName( 0, "happy" );
-},{"d3":2,"simplesets":3}],2:[function(require,module,exports){
+},{"d3":3,"simplesets":4}],3:[function(require,module,exports){
 !function() {
   var d3 = {
     version: "3.5.3"
@@ -10321,7 +10504,7 @@ test.updateName( 0, "happy" );
   if (typeof define === "function" && define.amd) define(d3); else if (typeof module === "object" && module.exports) module.exports = d3;
   this.d3 = d3;
 }();
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 // Set code for Node.js, which stores objects in arrays. All sets are
 // mutable, and set update operations happen destructively. However,
 // operations like set intersection and difference create a new set.

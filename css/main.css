@@ -66,6 +66,10 @@ a:focus {
 	background:#2B2E31;
 }
 
+.radio-inline{
+	margin-bottom: 15px;
+}
+
 .centered {
 	text-align: center
 }
@@ -226,46 +230,14 @@ csmall2 {
 	background: #00b3fe;
 }
 
-/*-----*/
-
-#tooltip {
-        position: absolute;
-        width: 90px;
-        height: auto;
-        padding: 10px;
-        background-color: white;
-        -webkit-border-radius: 10px;
-        -moz-border-radius: 10px;
-        border-radius: 10px;
-        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-        pointer-events: none;
-}
-
-#tooltip.hidden {
-        display: none;
-}
-
-#tooltip p {
-        margin: 0;
-        font-family: sans-serif;
-        font-size: 16px;
-        line-height: 20px;
-        word-wrap: break-word;
-  		overflow-x: auto;
-}
-
-/*-----*/
-
 #title1 {
 	width: 100px;
     text-align:center;
 	margin-bottom:5px;
-	border:1px solid #00bf00;
-    box-shadow: 0 0 10px #719ECE;
+	border:1px solid red;
+    box-shadow: 0 0 10px red;
     border-radius: 1em;
-    color:#00bf00;
+    color:red;
 
 }
 #title2 {
@@ -273,10 +245,10 @@ csmall2 {
     text-align:center;
 	margin-top:15px;
 	margin-bottom:5px;
-	border:1px solid #007fff;
-    box-shadow: 0 0 10px #719ECE;
+	border:1px solid orange;
+    box-shadow: 0 0 10px orange;
     border-radius: 1em;
-    color:#007fff;
+    color:orange;
 
 }
 #title3 {
@@ -284,10 +256,10 @@ csmall2 {
     text-align:center;
 	margin-top:15px;
 	margin-bottom:5px;
-	border:1px solid #ff3433;
-    box-shadow: 0 0 10px #719ECE;
+	border:1px solid #EAEA30;
+    box-shadow: 0 0 10px #EAEA30;
     border-radius: 1em;
-    color:#ff3433;
+    color:#EAEA30;
 
 }
 #title4 {
@@ -295,21 +267,21 @@ csmall2 {
     text-align:center;
 	margin-top:15px;
 	margin-bottom:5px;
-	border:1px solid #A57706;
-    box-shadow: 0 0 10px #719ECE;
+	border:1px solid green;
+    box-shadow: 0 0 10px green;
     border-radius: 1em;
     text-align:center;
-    color:#A57706;
+    color:green;
 }
 #title5 {
 	width: 100px;
     text-align:center;
 	margin-top:15px;
 	margin-bottom:5px;
-	border:1px solid #BD3613;
-    box-shadow: 0 0 10px #719ECE;
+	border:1px solid blue;
+    box-shadow: 0 0 10px blue;
     border-radius: 1em;
-    color:#BD3613;
+    color:blue;
 
 }
 #title6 {
@@ -317,64 +289,64 @@ csmall2 {
     text-align:center;
 	margin-top:15px;
 	margin-bottom:5px;
-	border:1px solid  #00FFFF;
-    box-shadow: 0 0 10px #719ECE;
+	border:1px solid  indigo;
+    box-shadow: 0 0 10px indigo;
     border-radius: 1em;
-    color:#00FFFF;
+    color:indigo;
 }
 #title7 {
 	width: 100px;
     text-align:center;
 	margin-top:15px;
 	margin-bottom:5px;
-	border:1px solid  #ff00ff;
-    box-shadow: 0 0 10px #719ECE;
+	border:1px solid  violet;
+    box-shadow: 0 0 10px violet;
     border-radius: 1em;
-    color:#ff00ff;
+    color:violet;
 }
 
 #s1 {
-	border:1px solid #00bf00;
-    box-shadow: 0 0 10px #719ECE;
+	border:1px solid red;
+    box-shadow: 0 0 10px red;
     border-radius: 1em;
-    color:#00bf00;
+    color: red;
 
 }
 #s2 {
-	border:1px solid #007fff;
-    box-shadow: 0 0 10px #719ECE;
+	border:1px solid orange;
+    box-shadow: 0 0 10px orange;
     border-radius: 1em;
-    color:#007fff;
+    color: orange;
 }
 #s3 {
-	border:1px solid #ff3433;
-    box-shadow: 0 0 10px #719ECE;
+	border:1px solid #EAEA30;
+    box-shadow: 0 0 10px #EAEA30;
     border-radius: 1em;
-    color:#ff3433;
+    color: #EAEA30;
 }
 #s4 {
-	border:1px solid #A57706;
-    box-shadow: 0 0 10px #719ECE;
+	border:1px solid green;
+    box-shadow: 0 0 10px green;
     border-radius: 1em;
-    color:#A57706;
+    color: green;
 }
 #s5 {
-	border:1px solid #BD3613;
-    box-shadow: 0 0 10px #719ECE;
+	border:1px solid blue;
+    box-shadow: 0 0 10px blue;
     border-radius: 1em;
-    color:#BD3613;
+    color: blue;
 }
 #s6 {
-	border:1px solid #00FFFF;
-    box-shadow: 0 0 10px #719ECE;
+	border:1px solid indigo;
+    box-shadow: 0 0 10px indigo;
     border-radius: 1em;
-    color:#00FFFF;
+    color: indigo;
 }
 #s7 {
-	border:1px solid #ff00ff;
-    box-shadow: 0 0 10px #719ECE;
+	border:1px solid violet;
+    box-shadow: 0 0 10px violet;
     border-radius: 1em;
-    color:#ff00ff;
+    color: violet;
 }
 
 /* genevenn tooltip */
