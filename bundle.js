@@ -412,6 +412,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 	//call this when mouse over event is triggered
 	var mouseOverCall = function ( target, id ){
+
 		d3.select(target).transition()
 			.style( "fill-opacity",  function() {
 				if ( typeof id == 'string' || id instanceof String)
@@ -420,35 +421,26 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 					return selectedShapeFillOpacity;
 				}
 			)
-			.style( "stroke-opacity", selectedStrokeFillOpacity);
-
+			.style( "stroke-opacity", 0 );
 
 		var combination = IntersectionSet[ id ].combination;
 
+		d3.select( "#text" + id ).transition()
+			.style( "fill", "white" );
+
 		if ( typeof id == 'string' || id instanceof String) {
-
-
 
 			var selectedSet = IntersectionSet[ id ].list;
 			var intersectSetSize = selectedSet.size();
 
-			d3.select( "#text" + id ).transition()
-				.style( "fill", "white" );
-
 			if ( intersectSetSize != 0 ) {
-				var sizeRecord = [];
 
 				for ( i = 0; i < combination.length; i++ ){
-					var target =  IntersectionSet[ combination[i].toString() ].list
-					var targetSize = target.size()
-					sizeRecord.push( {index: combination[i], size: selectedSet.intersection( target ).size(), osize: targetSize } )
-				}
+					var targetSize = IntersectionSet[ combination[i].toString() ].list.size()
 
-				for ( i = 0; i < sizeRecord.length; i++ ) {
-					var targetIndex = sizeRecord[i].index;
-					var ratio = sizeRecord[i].size / sizeRecord[i].osize;
+					var ratio = intersectSetSize / targetSize;
 
-					d3.select( "#shape" + targetIndex ).transition()
+					d3.select( "#shape" + combination[i] ).transition()
 						.style( "fill-opacity",  function() {
 
 							var temp = (selectedShapeFillOpacity - unselectedShapeFillOpacity) * ratio;
@@ -517,13 +509,13 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
        
 		var combination = IntersectionSet[ id ].combination;
 
+		d3.select( "#text" + id ).transition()
+			.style( "fill", "black" );
+
 		if ( typeof id == 'string' || id instanceof String) {
 
 			var selectedSet = IntersectionSet[ id ].list;
 			var intersectSetSize = selectedSet.size();
-
-			d3.select( "#text" + id ).transition()
-				.style( "fill", "black" );
 
 			if ( intersectSetSize != 0 ) {
 
@@ -1014,7 +1006,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 	var StrokeWidth = 2;
 
-	var selectedShapeFillOpacity = 0.6;
+	var selectedShapeFillOpacity = 0.75;
 	var unselectedShapeFillOpacity = 0.25;
 
 	//store all graph transform arguments: translate and scale
@@ -1114,7 +1106,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 	predefineIntersectText[7] = [ { "id": "1∩2∩3∩4∩5∩6∩7", "textX": 236, "textY": 250 } ];
 
 	//magic finished
-	predefineColor = [ "","red", "orange", "yellow", "green", "blue", "indigo", "violet", "brown" ];
+	predefineColor = [ "","red", "orange", "#BABA00", "green", "blue", "indigo", "violet", "brown" ];
 
 	//define drawing canvas/
 	var w = 650, h = 650;
