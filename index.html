@@ -7,7 +7,6 @@
     <link href="css/bootstrap.css" rel="stylesheet">
     <link href="css/main.css" rel="stylesheet">	
 
-
   </head>
 
   <body>
@@ -56,16 +55,18 @@
 		 		<div class="hline"></div>
 		 		<div class="spacing"></div>
 
+		 		<div class="selectMode">
+					<label class="radio-inline">
+						<input id="radio-inline-predefine" type="radio" name="optradio">predefined Mode
+					</label>
+					<label class="radio-inline">
+						<input id="radio-inline-auto" type="radio" name="optradio">Automatic Mode
+					</label>
+				</div>
+
 		 		<div id="container">
 					   <!-- <textarea id = "title1" class="form-control status-box" rows="1" placeholder="First List name"></textarea> -->
-					<div class="selectMode">
-						<label class="radio-inline">
-							<input id="radio-inline-predefine" type="radio" name="optradio">predefined Mode
-						</label>
-						<label class="radio-inline">
-							<input id="radio-inline-auto" type="radio" name="optradio">Automatic Mode
-						</label>
-					</div>
+
 
 					<div> <input id="title1" type="text" value="List 1"> </div>
 					<div class="List-group-1">
@@ -118,12 +119,22 @@
 					   	<textarea id = "s7" class="form-control genelist" rows="4" placeholder="Please put seventh list here"></textarea>
 					  </div>
 
+				</div>
+
+					<div class="btn-group">
+						<div class="btn btn-default btn-file">
+							Browser <input type="file" id="files" name="file" data-filename-placement="inside">
+						</div>
+
+						<input id="load-simple-file" class="btn btn-default" type="button" value="Load Sample file"/>
+
 					</div>
 
-					<div class="btn btn-default btn-file">
-						Browser <input type="file" id="files" name="file" data-filename-placement="inside">
+					<div class="file-structure-explain">
+						<p>If you want to upload your own JSON file, here is the structure:</p>
+						<p> { "s1": [ "A", "B", "C", "D" ], <br>
+						"s2": ["B", "C", "E", "F", "G"] } </p>
 					</div>
-
 	 		</div>
 	 		
 	 		<div class="col-lg-8">

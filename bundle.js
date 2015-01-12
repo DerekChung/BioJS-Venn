@@ -48,6 +48,26 @@ d3.select("#files").on("change" ,function() {
 	reader.readAsBinaryString(blob);
 });
 
+d3.select("#load-simple-file").on("click" ,function() {
+	var data = require('./sample.json');
+	venn.updateAllList( data );
+
+	var counter = 0;
+	for ( key in data ) {
+		var text = data[key].join("\n");
+		d3.select( "#s" + ++counter).node().value = text;
+		d3.select( "#title" + counter ).attr( "value", key);
+		d3.select( "#inlineCheckboxLabel" + counter ).text( key );
+		d3.select( "#inlineCheckbox" + counter ).node().disabled = false;
+	}
+
+	for ( var i = counter + 1; i <= N; i++ ){
+		d3.select("#s" + ++counter).node().value = "";
+		d3.select("#inlineCheckbox" + counter ).node().disabled = true;
+	}
+});
+
+
 //output the union list
 function checkboxUpdate() {
 
@@ -133,7 +153,7 @@ d3.select( "#radio-inline-auto" ).on( "change", function () {
 								if ( this.checked )
 									venn.switchToAutoMode();
 							} );
-},{"./BioJSVenn":2,"d3":3}],2:[function(require,module,exports){
+},{"./BioJSVenn":2,"./sample.json":5,"d3":3}],2:[function(require,module,exports){
 require('d3');
 var sets = require('simplesets')
 
@@ -632,7 +652,7 @@ exports.BioJSVenn = function( target, output, lists ) {
 		else
 			hypotenuse = length / Math.sin( baseRadian ) * Math.sin( rotateRadian );
 
-		var x = 350, y = 300;
+		var x = 350, y = 280;
 
 		//Setup for text, here the variables are array. (for future extension)
 		var tx = [], ty = [], tlength = [], thypotenuse = []; 
@@ -1003,7 +1023,7 @@ exports.BioJSVenn = function( target, output, lists ) {
 	predefineColor = [ "","red", "orange", "yellow", "green", "blue", "indigo", "violet", "brown" ];
 
 	//define drawing canvas/
-	var w = 746, h = 900;
+	var w = 650, h = 650;
 	var svg = d3.select( "#" + target )
 						.append("svg")
 						.attr("width", w)
@@ -10838,4 +10858,15 @@ exports.StringSet = function(items) {
 };
 
 exports.StringSet.prototype = StringSetPrototype;
+},{}],5:[function(require,module,exports){
+module.exports={
+    "s1": ["G000001", "G000002", "G000003", "G000004", "G000005"],
+    "s2": ["G000001", "G000002", "G000003", "G000007", "G000008"],
+    "s3": ["G000001", "G000002", "G000003", "G000004", "G000012"],
+    "s4": ["G000001", "G000002", "G000003", "G000006", "G000004"],
+    "s5": ["G000001", "G000002", "G000003", "G000007", "G000008"],
+    "s6": ["G000001", "G000002", "G000003", "G000005", "G000004"],
+    "s7": ["G000001", "G000002", "G000003", "G000006", "G000008"]
+}
+
 },{}]},{},[1]);
