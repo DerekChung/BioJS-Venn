@@ -3,7 +3,7 @@ var sets = require('simplesets')
 
 var VennPrototype = {
 
-	autoLayout: true,
+	autoLayout: false,
 
 	switchToAutoMode: function () {
 		this.autoLayout = true;
@@ -22,6 +22,53 @@ var VennPrototype = {
 
 	},
 
+	getRequiredList: function( requireList ){
+		
+		if ( requireList instanceof Array ) {
+			if ( requireList.length != 0 && requireList.length <= 7 ) {
+
+				requireList.sort();
+				var requireKey = requireList[0];
+
+				for ( i = 1; i < requireList.length; i++ ){
+					//generate 1∩2∩......
+					requireKey += "∩" + requireList[i];
+				}
+
+				var intersectSets = this._getIntersectSets()
+
+				if ( intersectSets ){
+					if ( intersectSets[requireKey] )
+						return intersectSets[requireKey].list;
+				}
+			}
+		}
+
+	},
+
+	getRequiredListByName: function( requireList ){
+
+		if ( requireList instanceof Array ) {
+			if ( requireList.length != 0 && requireList.length <= 7 ) {
+
+				var requirement = [];
+
+				for ( i = 0; i < requireList.length; i++ )
+					for ( j = 0; j < this._listSets.length; j++ )
+						if ( this._listSets[j].name == requireList[i] )
+							requirement.push( j );
+
+				if ( requirement.length > 0 )
+					return getRequiredList( requirement );
+			}
+		}
+
+	},
+
+	getAllIntersectSets: function(){
+		return this._getIntersectSets();
+	},
+
 	updateList: function ( index, list, name ){
 
 		if ( this._listSets[index] ) {
@@ -38,7 +85,7 @@ var VennPrototype = {
 					
 					this._updateIntersectSets( ans );
 					this._updateGraph();
-					return;
+					return true;
 				}
 			}
 
@@ -47,8 +94,11 @@ var VennPrototype = {
 			
 			this._updateIntersectSets( ans );
 			this._updateText();
+
+			return true;
 		}
 
+		return false;
 	},
 
 	addList: function ( name, list ) {
@@ -274,6 +324,9 @@ exports.BioJSVenn = function( target, lists ) {
 		*/
 
 		drawClip( combinationList, transformGroup );
+
+		if ( jsonData.length > 1 )
+			putPredefinedTextLabel( jsonData.length, transformGroup )
 		    
 	};
 
@@ -348,7 +401,25 @@ exports.BioJSVenn = function( target, lists ) {
 
 		drawClip( combinationList, transformGroup );
 
+		if ( jsonData.length > 1 )
+			putPredefinedTextLabel( jsonData.length, transformGroup )
+
 	};
+
+	var putPredefinedTextLabel = function( numberOfSets, drawSVG ){
+		drawSVG.selectAll("_")
+				.data( predefineIntersectText[numberOfSets] )
+				.enter()
+				.append( "g" )
+				.append( "text" )
+				.attr( "id", function (d) { return d.id } )
+				.attr( "x", function (d) { return d.textX } ).attr("y", function(d){ return d.textY })
+				.text( function (d){
+					if ( !IntersectionSet[ d.id.toString() ] )
+						return 0;
+					else
+						return IntersectionSet[ d.id.toString() ].list.size() } );
+	}
 
 	var drawVenn = function (num) {
 
@@ -591,23 +662,40 @@ exports.BioJSVenn = function( target, lists ) {
 		}
 	}
 
+	this._getIntersectSets = function(){
+		return IntersectionSet;
+	}
+
 	//predefine number of sets in Venn diagram.
-	//magic, don't touch
 	this._N = 7;
+	//where the data of sets store.
+	//_listSets[index]: where index is integer starting from 0
+	//structure: { name: , list: }
+	//name is used to store list name
 	this._listSets = [];
+	//store for the list name, once the name of list is updated.
+	//( _listSets[i],name is updated. ) This one must also be updated.
 	var nameList = [];
-	var IntersectionSet;
+	//	intersect Sets structure:
+	/*	IntersectionSet[ key ]: key must be a string.
+		for set 1, input "1", for set 1∩2 input "1∩2"
+		combination: list of this intersect set component.
+				For example, 1∩2 is intersect of 1 and 2.
+				combination = [ 1, 2 ]
+		list: the elements inside the intersect set.
+	*/
+ 	var IntersectionSet;
 
 	/*
 		combinationList: this array is used for store all the combinations.
-		For example, there are 3 sets. The intersect set will be the combinations
-		of these 3 sets. 
+		For example, for a 3 sets venn diagram
+		combinationList = [ [3], [2], [3, 2], [1], [3, 1], [2, 1], [3, 2, 1] ]
 	*/
 	var combinationList = [];
 
 	var predefineColor = [];
-	var predefineIntersectPath = [];
 	var predefineShape = [];
+	var predefineIntersectText = [];
 
 	var predefineStrokeColor = "#259286";
 
@@ -619,11 +707,14 @@ exports.BioJSVenn = function( target, lists ) {
 	var selectedShapeFillOpacity = 0.6;
 	var unselectedShapeFillOpacity = 0.25;
 
+	//store all graph transform arguments: translate and scale
 	var transform = [];
 
 	for ( i = 0; i < this._N; i++ )
 		transform.push( { x: 0, y: 0, scale: 1 } );
 
+	//starting from this point is magic! Don't touch!
+	//This maigc is used for predefined ellipsis and polygons.
 	//special case for 1 to 3 sets Venn diagram
 	//predefine circle
 	var circleR = 110;	//control the radius of circles
@@ -672,15 +763,13 @@ exports.BioJSVenn = function( target, lists ) {
 							{ "id": 6, "textX": 135, "textY": 290, "d": "M  60.184 344.046 L 262.476 109.903 L 223.276 253.962 Z" }];
 
 	//predefine ellipsis for 7 sets venn diagram
-	predefineShape[7] = [	{ "id": 1, "cx": 220, "cy": 228,"rotate": 0,   "textX": 40,  "textY": 294 },
+	predefineShape[7] = [	{ "id": 1, "cx": 220, "cy": 228,"rotate": 0,   "textX": 40,  "textY": 228 },
 								{ "id": 2, "cx": 216, "cy": 246,"rotate": 51,  "textX": 96,  "textY": 117 },
 								{ "id": 3, "cx": 246, "cy": 217,"rotate": 102, "textX": 273, "textY": 49  },
 								{ "id": 4, "cx": 289, "cy": 222,"rotate": 154, "textX": 434, "textY": 152 },
 								{ "id": 5, "cx": 310, "cy": 258,"rotate": 25,  "textX": 458, "textY": 341 },
 								{ "id": 6, "cx": 296, "cy": 298,"rotate": 77,  "textX": 330, "textY": 472 },
 								{ "id": 7, "cx": 256, "cy": 311,"rotate": 135, "textX": 132, "textY": 440 }];
-
-	predefineColor = [ "","red", "orange", "yellow", "green", "blue", "indigo", "violet", "brown" ];
 
 	for ( i = 4; i <= this._N; i++ ) {
 		//6 sets Venn diagram is a special case
@@ -691,7 +780,31 @@ exports.BioJSVenn = function( target, lists ) {
 			}
 		}
 	}
+
+	predefineIntersectText[2] = [ { "id": "1∩2", "textX": 290, "textY": 330 } ];
+	predefineIntersectText[3] = [ { "id": "1∩2", "textX": 290, "textY": 330 },
+								{ "id": "1∩3", "textX": 240, "textY": 240,  },
+								{ "id": "2∩3", "textX": 340, "textY": 240,  },
+								{ "id": "1∩2∩3", "textX": 290, "textY": 270 } ];
+
+	predefineIntersectText[4] = [ { "id": "1∩2", "textX": 146, "textY": 127 },
+								{ "id": "1∩3", "textX": 194, "textY": 311 },
+								{ "id": "1∩4", "textX": 294, "textY": 368 },
+								{ "id": "2∩3", "textX": 291, "textY": 118 },
+								{ "id": "2∩4", "textX": 389, "textY": 309 },
+								{ "id": "3∩4", "textX": 433, "textY": 141 },
+								{ "id": "1∩2∩3", "textX": 223, "textY": 201 }, 
+								{ "id": "1∩2∩4", "textX": 341, "textY": 328 },
+								{ "id": "1∩3∩4", "textX": 246, "textY": 329 },
+								{ "id": "2∩3∩4", "textX": 366, "textY": 208 },
+								{ "id": "1∩2∩3∩4", "textX": 290, "textY": 278 } ]
+
+	predefineIntersectText[5] = [ { "id": "1∩2∩3∩4∩5", "textX": 236, "textY": 250 } ];
+	predefineIntersectText[6] = [ { "id": "1∩2∩3∩4∩5∩6", "textX": 200.66335, "textY": 217.0728 } ];
+	predefineIntersectText[7] = [ { "id": "1∩2∩3∩4∩5∩6∩7", "textX": 236, "textY": 250 } ];
+
 	//magic finished
+	predefineColor = [ "","red", "orange", "yellow", "green", "blue", "indigo", "violet", "brown" ];
 
 	//define drawing canvas/
 	var w = 746, h = 900;
