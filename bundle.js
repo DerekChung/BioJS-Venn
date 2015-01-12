@@ -4,7 +4,27 @@ require( "d3" );
 
 var biojsVenn = require( "./BioJSVenn" );
 
-venn = new biojsVenn.BioJSVenn( "first", "intersectSetList" );
+var clickCallback = function ( obj ) {
+
+	var text = obj.title + ":\n";
+	
+	text += obj.list.join("\n");
+
+	d3.select( "#intersectSetList" ).node().value = text;
+
+	for ( i = 1; i <= N; i++ )
+		d3.select( "#inlineCheckbox" + i ).property( "checked", false );
+
+	for ( i = 0; i < obj.combination.length; i++ ) {
+
+		d3.select( "#inlineCheckbox" + obj.combination[i] ).property( "checked", true );
+	}
+
+}
+
+venn = new biojsVenn.BioJSVenn( "first" );
+
+venn.setClickCallback( clickCallback );
 
 var N = venn.getMaxVennSets();
 
@@ -87,8 +107,12 @@ function checkboxUpdate() {
 	
 	var intersectionSet = venn.getRequiredList( target );
 
-	if ( intersectionSet )
-		d3.select("#intersectSetList").node().value = intersectionSet.array().join("\n");
+	if ( intersectionSet ) {
+		var text = intersectionSet.title + ":\n";
+		text += intersectionSet.list.join("\n");
+
+		d3.select("#intersectSetList").node().value = text;
+	}
 	else
 		d3.select("#intersectSetList").node().value = "";
 }
@@ -159,7 +183,11 @@ var sets = require('simplesets')
 
 var VennPrototype = {
 
-	autoLayout: false,
+	autoLayout: true,
+
+	setClickCallback: function ( f ){
+		this._setclickChartCallback( f );
+	},
 
 	getNumberOfSets: function () {
 		return this._listSets.length;
@@ -204,7 +232,8 @@ var VennPrototype = {
 				if ( intersectSets ){
 					if ( intersectSets[requireKey] ) {
 						this._lastRequireSet = requireKey;
-						return intersectSets[requireKey].list;
+						var name = this._getIntersectSetsName( intersectSets[requireKey].combination )
+						return  { title: name, list: intersectSets[requireKey].list.array()};
 					}
 				}
 			}
@@ -232,7 +261,17 @@ var VennPrototype = {
 	},
 
 	getAllIntersectSets: function(){
-		return this._getIntersectSets();
+		var ans = [];
+		var intersectList = this._getIntersectSets();
+
+		for ( key in intersectList ) {
+			var combination = intersectList[key].combination;
+			var name = this._getIntersectSetsName( combination )
+
+			ans.push( { title: name, intersectList: intersectList[key].list.array() } )
+		}
+
+		return ans;
 	},
 
 	updateList: function ( index, name, list ){
@@ -329,7 +368,7 @@ var VennPrototype = {
 	}
 }
 
-exports.BioJSVenn = function( target, output, lists ) {
+exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 	if ( !target )
 		return;
@@ -356,30 +395,19 @@ exports.BioJSVenn = function( target, output, lists ) {
 
 		var combination = IntersectionSet[ id ].combination;
 		var text = "";
+		var arr = [];
 		/*
 		if ( nameList[ combination[0] - 1 ] )
 			text =  nameList[ combination[0] - 1 ];
 		*/
-		text =  nameList[ combination[0] - 1 ];
-
-		for ( i = 1; i < combination.length; i++ ){
-			/*
-			if ( !nameList[ combination[i] - 1] )
-				continue;
-			*/
-			if ( text != "" )
-				text += " ∩ " + nameList[ combination[i] - 1 ];
-			else
-				text += nameList[ combination[i] - 1 ];
-		}
-
-		text += ":\n";
+		text = getNameByCombination( combination );
 
 		if ( IntersectionSet[ id ] )
 			if ( IntersectionSet[ id ].list.size() > 0 )
-				text +=	IntersectionSet[ id ].list.array().join("\n") ;
+				arr =	IntersectionSet[ id ].list.array() ;
 
-		d3.select( "#" + outputList ).node().value = text;
+		if ( clickChartCallback && clickChartCallback instanceof Function )
+			clickChartCallback( { title: text, list: arr, combination: combination  } )
 	}
 
 	//call this when mouse over event is triggered
@@ -407,26 +435,7 @@ exports.BioJSVenn = function( target, output, lists ) {
 
 			var combination = IntersectionSet[ id ].combination;
 
-			var text = "";
-			/*
-			if ( nameList[ combination[0] - 1 ] )
-				text =  nameList[ combination[0] - 1 ];
-			*/
-			
-			text =  nameList[ combination[0] - 1 ];
-
-			for ( i = 1; i < combination.length; i++ ){
-				/*
-				if ( !nameList[ combination[i] - 1] )
-					continue;
-				*/
-				if ( text != "" )
-					text += " ∩ " + nameList[ combination[i] - 1 ];
-				else
-					text += nameList[ combination[i] - 1 ];
-			}
-
-			return text;
+			return getNameByCombination( combination ) + ":";
 		});
 
 		d3.select( "#vennToolTipListSize" )
@@ -442,6 +451,23 @@ exports.BioJSVenn = function( target, output, lists ) {
 				return text;
 			} );
 	};
+
+	var getNameByCombination = function( combination ) {
+		var text =  nameList[ combination[0] - 1 ];
+
+		for ( i = 1; i < combination.length; i++ ){
+			/*
+			if ( !nameList[ combination[i] - 1] )
+				continue;
+			*/
+			if ( text != "" )
+				text += " ∩ " + nameList[ combination[i] - 1 ];
+			else
+				text += nameList[ combination[i] - 1 ];
+		}
+
+		return text;
+	}
 
 	//call this when mouse out event is triggered
 	var mouseOutCall = function (target, id) {
@@ -801,6 +827,9 @@ exports.BioJSVenn = function( target, output, lists ) {
 		}
 	}
 
+	var addExportModule = function () {
+
+	}
 
 	this._updateGraph = function () {
 
@@ -880,7 +909,18 @@ exports.BioJSVenn = function( target, output, lists ) {
 		return IntersectionSet;
 	}
 
+	this._setclickChartCallback = function( x ){
+		if ( x && x instanceof Function )
+			clickChartCallback = x;
+	}
+
+	this._getIntersectSetsName = function ( combination ) {
+		return getNameByCombination(combination);
+	}
+
 	this._lastRequireSet = "";
+
+	var clickChartCallback = "";
 
 	//predefine number of sets in Venn diagram.
 	this._N = 7;
@@ -1029,8 +1069,6 @@ exports.BioJSVenn = function( target, output, lists ) {
 						.attr("width", w)
 						.attr("height", h);
 
-	var outputList = output;
-
     var tooltip = d3.select("body").append("div")
 		.attr( "id", "vennToolTip" )
 		.style("position", "absolute")
@@ -1051,6 +1089,9 @@ exports.BioJSVenn = function( target, output, lists ) {
 	tooltip.append( "div" )
 		.attr("id", "vennToolTipList").style( "color", "white" );
     
+    if ( clickCallback )
+    	clickChartCallback = clickCallback;
+
     if ( lists )
     	this.updateAllList( lists );
 
