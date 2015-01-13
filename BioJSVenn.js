@@ -823,6 +823,11 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 	this._updateName = function ( i, name ){
 		this._listSets[i].name = name;
 		nameList[i] = name;
+
+		var text = d3.select( "#titleText" + (i + 1) )
+
+		if ( text.node() )
+			text.text( name );
 	}
 
 	this._updateText = function () {
