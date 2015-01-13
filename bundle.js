@@ -179,6 +179,10 @@ d3.select( "#radio-inline-auto" ).on( "change", function () {
 							} );
 
 d3.select( "#save-svg-png" ).on( "click", function () { venn.saveAsPNG() } )
+
+d3.select( "#save-require-list" ).on( "click", function () { venn.saveLastRequireSets() } )
+
+d3.select( "#save-all-list" ).on( "click", function () { venn.saveAllSets() } )
 },{"./BioJSVenn":2,"./sample.json":5,"d3":3}],2:[function(require,module,exports){
 require('d3');
 
@@ -190,36 +194,30 @@ var VennPrototype = {
 
 	saveLastRequireSets: function () {
 
-		var textToWrite = document.getElementById("inputTextToSave").value;
+		var key = this._getlastRequireSet();
 
 		var intersect = this._getIntersectSets();
-		var requireSect = intersect(this._lastRequireSet);
+		var combination = intersect[ key ].combination;
+		var listName = this._getIntersectSetsName(combination);
+		var textToWrite = listName + ":\n" + intersect[ key ].list.array().join( "\n" );
+		
+		this._savefile( listName,  textToWrite )
 
-		var textFileAsBlob = new Blob([textToWrite], {type:'text/plain'});
-		var fileNameToSaveAs = this._lastRequireSet;
+	},
 
-		var downloadLink = document.createElement("a");
-		downloadLink.download = fileNameToSaveAs;
-		downloadLink.innerHTML = "Download File";
-		downloadLink.id = "use-to-download-text-file"
+	saveAllSets: function () {
+		var intersect = this._getIntersectSets();
+		var textToWrite = "";
+		var combination, listName;
 
-		if (window.webkitURL != null)
-		{
-			// Chrome allows the link to be clicked
-			// without actually adding it to the DOM.
-			downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
+		for ( key in intersect ) {
+			combination = intersect[ key ].combination;
+			listName = this._getIntersectSetsName(combination);
+			textToWrite += listName + ":\n" + intersect[ key ].list.array().join( "\n" );
+			textToWrite += "\n\n"
 		}
-		else
-		{
-			// Firefox requires the link to be added to the DOM
-			// before it can be clicked.
-			downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
-			downloadLink.onclick = destroyClickedElement;
-			downloadLink.style.display = "none";
-			document.body.appendChild(downloadLink);
-		}
-
-		downloadLink.click();
+		
+		this._savefile( "All Lists",  textToWrite )
 
 	},
 
@@ -269,7 +267,7 @@ var VennPrototype = {
 
 				if ( intersectSets ){
 					if ( intersectSets[requireKey] ) {
-						this._lastRequireSet = requireKey;
+						this._updatelastRequireSet( requireKey );
 						var name = this._getIntersectSetsName( intersectSets[requireKey].combination )
 						return  { title: name, list: intersectSets[requireKey].list.array()};
 					}
@@ -439,6 +437,8 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 			text =  nameList[ combination[0] - 1 ];
 		*/
 		text = getNameByCombination( combination );
+
+		lastRequireSet = id;
 
 		if ( IntersectionSet[ id ] )
 			if ( IntersectionSet[ id ].list.size() > 0 )
@@ -1105,7 +1105,43 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		}
 	}
 
-	this._lastRequireSet = "";
+	this._updatelastRequireSet = function( key ){
+		lastRequireSet = key;
+	}
+
+	this._getlastRequireSet = function () {
+		return lastRequireSet;
+	}
+
+	this._savefile = function ( fileName ,textToWrite ) {
+		var textFileAsBlob = new Blob([textToWrite], {type:'text/plain'});
+		var fileNameToSaveAs = fileName;
+
+		var downloadLink = document.createElement("a");
+		downloadLink.download = fileNameToSaveAs;
+		downloadLink.innerHTML = "Download File";
+		downloadLink.id = "use-to-download-text-file"
+
+		if (window.webkitURL != null)
+		{
+			// Chrome allows the link to be clicked
+			// without actually adding it to the DOM.
+			downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
+		}
+		else
+		{
+			// Firefox requires the link to be added to the DOM
+			// before it can be clicked.
+			downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+			downloadLink.onclick = destroyClickedElement;
+			downloadLink.style.display = "none";
+			document.body.appendChild(downloadLink);
+		}
+
+		downloadLink.click();
+	}
+
+	var lastRequireSet = "";
 
 	var clickChartCallback = "";
 

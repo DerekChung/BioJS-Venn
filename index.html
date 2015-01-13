@@ -2,7 +2,7 @@
   <head>
   	<meta charset="utf-8">
 
-    <title>genvenn</title>
+    <title>BioJSVenn</title>
 
     <link href="css/bootstrap.css" rel="stylesheet">
     <link href="css/main.css" rel="stylesheet">	
@@ -57,10 +57,10 @@
 
 		 		<div class="selectMode">
 					<label class="radio-inline">
-						<input id="radio-inline-predefine" type="radio" name="optradio">predefined Mode
+						<input id="radio-inline-predefine" type="radio" name="optradio">static layout Mode
 					</label>
 					<label class="radio-inline">
-						<input id="radio-inline-auto" type="radio" name="optradio">Automatic Mode
+						<input id="radio-inline-auto" type="radio" name="optradio" checked>auto layout Mode
 					</label>
 				</div>
 
@@ -147,8 +147,10 @@
 					</div>
 				</div>
 
-				<div>
+				<div class="btn-group">
 					<input id="save-svg-png" class="btn btn-default" type="button" value="Save as PNG"/>
+					<input id="save-require-list" class="btn btn-default" type="button" value="Save required list"/>
+					<input id="save-all-list" class="btn btn-default" type="button" value="Save all list"/>
 				</div>
 
 					<div id = "output-list-checkbox">
