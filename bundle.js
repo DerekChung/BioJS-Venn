@@ -188,6 +188,41 @@ var VennPrototype = {
 
 	autoLayout: true,
 
+	saveLastRequireSets: function () {
+
+		var textToWrite = document.getElementById("inputTextToSave").value;
+
+		var intersect = this._getIntersectSets();
+		var requireSect = intersect(this._lastRequireSet);
+
+		var textFileAsBlob = new Blob([textToWrite], {type:'text/plain'});
+		var fileNameToSaveAs = this._lastRequireSet;
+
+		var downloadLink = document.createElement("a");
+		downloadLink.download = fileNameToSaveAs;
+		downloadLink.innerHTML = "Download File";
+		downloadLink.id = "use-to-download-text-file"
+
+		if (window.webkitURL != null)
+		{
+			// Chrome allows the link to be clicked
+			// without actually adding it to the DOM.
+			downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
+		}
+		else
+		{
+			// Firefox requires the link to be added to the DOM
+			// before it can be clicked.
+			downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+			downloadLink.onclick = destroyClickedElement;
+			downloadLink.style.display = "none";
+			document.body.appendChild(downloadLink);
+		}
+
+		downloadLink.click();
+
+	},
+
 	setClickCallback: function ( f ){
 		this._setclickChartCallback( f );
 	},
@@ -731,7 +766,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		else
 			hypotenuse = length / Math.sin( baseRadian ) * Math.sin( rotateRadian );
 
-		var x = 350, y = 280;
+		var x = 350, y = 330;
 
 		//Setup for text, here the variables are array. (for future extension)
 		var tx = [], ty = [], tlength = [], thypotenuse = []; 
@@ -743,13 +778,20 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		else
 			thypotenuse.push(tlength[0] / Math.sin( baseRadian ) * Math.sin( rotateRadian ));
 
-		var rx = 200, ry = 110;
+		//for title
+		tx.push( x + rx * 1.2 );
+		ty.push( y );
+		tlength.push( tx[1] - x + length  )
+		if ( rotateAngle == 180 ) 
+			thypotenuse.push(tlength[1] * 2);
+		else
+			thypotenuse.push(tlength[1] / Math.sin( baseRadian ) * Math.sin( rotateRadian ));
 
-		var shapePosition = [];
-		var textPosition = [];
+		var shapePosition = [], textPosition = [], titlePosition = [];
 
 		shapePosition.push( { "x": x, "y": y } );
 		textPosition.push( { "x": tx[0], "y": ty[0] } )
+		titlePosition.push( { "x": tx[1], "y": ty[1]  } )
 
 		for ( i = 0; i < num; i++ ) {
 			var nextX = shapePosition[i].x + hypotenuse * Math.cos( (Math.PI - baseRadian) + rotateRadian * i );
@@ -759,6 +801,10 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 			var nextTextX = textPosition[i].x + thypotenuse[0] * Math.cos( (Math.PI - baseRadian) + rotateRadian * i );
 			var nextTextY = textPosition[i].y + thypotenuse[0] * Math.sin( (Math.PI - baseRadian) + rotateRadian * i );
 			textPosition.push( { "x": nextTextX, "y": nextTextY } );
+
+			var nextTitleX = titlePosition[i].x + thypotenuse[1] * Math.cos( (Math.PI - baseRadian) + rotateRadian * i );
+			var nextTitleY = titlePosition[i].y + thypotenuse[1] * Math.sin( (Math.PI - baseRadian) + rotateRadian * i );
+			titlePosition.push( { "x": nextTitleX, "y": nextTitleY } );
 		}
 
 		var transformGroup = svg.append("g")
@@ -768,11 +814,12 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 		addWhiteBackground( transformGroup );
 
-		var graphData = [], textData = [];
+		var graphData = [], textData = [], titleData = [];
 
 		for ( i = 0; i < num; i++ ) {
 			graphData.push( { "id": i + 1, "cx": shapePosition[i].x, "cy": shapePosition[i].y, "rotate": rotateAngle * i, "rx": 220, "ry": 110 } )
 			textData.push( { "id": i + 1, "x": textPosition[i].x , "y": textPosition[i].y } );
+			titleData.push( { "id": i + 1, "x": titlePosition[i].x , "y": titlePosition[i].y } );
 		}
 
 		var defs = transformGroup.append( "defs" )
@@ -825,6 +872,19 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 					else
 						return IntersectionSet[ d.id.toString() ].list.size() 
 				} )
+
+		var titleGroup = transformGroup.selectAll("_")
+								.data(titleData)
+								.enter()
+								.append( "g" );
+
+		titleGroup.append( "text" )
+				.attr( "id", function (d) { return "titleText" + d.id } )
+				.attr( "x", function (d) { return d.x } ).attr( "y", function (d) { return d.y } )
+				.style( "fill", function (d) { return predefineColor[ d.id ] } )
+				.text( function (d) {
+					return nameList[d.id - 1];
+				} );
 
 		//text lable for the size of intersect of all lists.
 		if ( num >= 2 ) {
@@ -947,6 +1007,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 	};
 
 	this._updateName = function ( i, name ){
+		this._listSets[i].name = name;
 		nameList[i] = name;
 	}
 
@@ -982,7 +1043,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 						.append( "canvas" )
 						.attr( "width", w )
 						.attr( "height", h )
-						//.style( "display", "none" )
+						.style( "display", "none" )
 
 		var html = svg.attr("version", 1.1)
 					.attr("xmlns", "http://www.w3.org/2000/svg")
@@ -1007,6 +1068,22 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 			if ( textPosition.length > 0 ){
 				context.font = "15px Open San";
 				for ( i = 0; i < textPosition.length; i++ ){
+					var obj = textPosition[i];
+					context.fillText(obj.text, obj.x, obj.y);
+				}
+			}
+
+			textPosition = [];
+			for ( var i = 1; i <= 7; i++ ) {
+				var text = d3.select( "#titleText" + i )
+				if ( text.node() )
+					textPosition.push( { x: text.attr( "x" ), y: text.attr( "y" ), text: nameList[ i - 1 ] } );
+			}
+
+			if ( textPosition.length > 0 ){
+				context.font = "15px Open San";
+				for ( i = 0; i < textPosition.length; i++ ){
+					context.fillStyle = predefineColor[ i + 1 ];
 					var obj = textPosition[i];
 					context.fillText(obj.text, obj.x, obj.y);
 				}
@@ -1071,8 +1148,8 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 	var StrokeWidth = 2;
 
-	var selectedShapeFillOpacity = 0.75;
-	var unselectedShapeFillOpacity = 0.25;
+	var selectedShapeFillOpacity = 0.8;
+	var unselectedShapeFillOpacity = 0.35;
 
 	//store all graph transform arguments: translate and scale
 	var transform = [];
