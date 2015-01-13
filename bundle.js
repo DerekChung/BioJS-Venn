@@ -177,8 +177,11 @@ d3.select( "#radio-inline-auto" ).on( "change", function () {
 								if ( this.checked )
 									venn.switchToAutoMode();
 							} );
+
+d3.select( "#save-svg-png" ).on( "click", function () { venn.saveAsPNG() } )
 },{"./BioJSVenn":2,"./sample.json":5,"d3":3}],2:[function(require,module,exports){
 require('d3');
+
 var sets = require('simplesets')
 
 var VennPrototype = {
@@ -223,8 +226,8 @@ var VennPrototype = {
 				var requireKey = requireList[0];
 
 				for ( i = 1; i < requireList.length; i++ ){
-					//generate 1∩2∩......
-					requireKey += "∩" + requireList[i];
+					//generate 1in2in......
+					requireKey += "in" + requireList[i];
 				}
 
 				var intersectSets = this._getIntersectSets()
@@ -488,7 +491,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 				continue;
 			*/
 			if ( text != "" )
-				text += " ∩ " + nameList[ combination[i] - 1 ];
+				text += " in " + nameList[ combination[i] - 1 ];
 			else
 				text += nameList[ combination[i] - 1 ];
 		}
@@ -547,6 +550,8 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 								.attr( "transform", "scale(" + transform[ targetTransform ].scale + ") "
 											+ "translate(" + transform[ targetTransform ].x + ", "
 											+ transform[ targetTransform ].y + ")" )
+
+		addWhiteBackground( transformGroup );
 
 		var defs = transformGroup.append( "defs" )
 								.selectAll("_")
@@ -635,6 +640,8 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 								.attr( "transform", "scale(" + transform[ targetTransform ].scale + ") "
 											+ "translate(" + transform[ targetTransform ].x + ", "
 											+ transform[ targetTransform ].y + ")" )
+
+		addWhiteBackground( transformGroup );
 
 		var defs = transformGroup.append( "defs" )
 								.selectAll("_")
@@ -759,6 +766,8 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 										+ "translate(" + transform[num - 1].x + ", "
 										+ transform[num - 1].y + ")" )
 
+		addWhiteBackground( transformGroup );
+
 		var graphData = [], textData = [];
 
 		for ( i = 0; i < num; i++ ) {
@@ -820,9 +829,9 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		//text lable for the size of intersect of all lists.
 		if ( num >= 2 ) {
 			var allIntersectText = "1"
-			//generate 1∩2∩......
+			//generate 1in2in......
 			for ( i = 2; i <= num; i++ )
-				allIntersectText += "∩" + i
+				allIntersectText += "in" + i
 			
 			transformGroup.append( "text" )
 				.attr( "id", "text" + allIntersectText )
@@ -857,7 +866,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 				if ( combination[i][j].length == 1 )
 					continue;
 
-				var targetID = combination[i][j].join("∩");
+				var targetID = combination[i][j].join("in");
 
 				var group = drawOn.append( "g" )
 								.attr( "id", "g" + targetID )
@@ -873,7 +882,11 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		}
 	}
 
-	var addExportModule = function () {
+	var addWhiteBackground = function ( drawOn ) {
+		drawOn.append( "rect" )
+			.attr( "fill", "white" )
+			.attr("width", w).attr("height", h)
+			.attr( "x", 0 ).attr( "y", 0 );
 
 	}
 
@@ -908,7 +921,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 			for ( var key in ans ){
 				if ( this._listSets[ i ] ) 
-					result[ ( i +1 ).toString() + "∩" + key] = ans[key].intersection( this._listSets[ i ].list );
+					result[ ( i +1 ).toString() + "in" + key] = ans[key].intersection( this._listSets[ i ].list );
 				
 			}
 			for (var attrname in result) { ans[attrname] = result[attrname]; }
@@ -930,7 +943,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 		for ( i = 0; i < combinationList.length; i++ )
 			for ( j = 0; j < combinationList[i].length; j++ )
-				IntersectionSet[ combinationList[i][j].reverse().join("∩") ]["combination"] = combinationList[i][j];
+				IntersectionSet[ combinationList[i][j].reverse().join("in") ]["combination"] = combinationList[i][j];
 	};
 
 	this._updateName = function ( i, name ){
@@ -964,6 +977,57 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		return getNameByCombination(combination);
 	}
 
+	this.saveAsPNG = function( ){
+		var canvas = d3.select( "body" )
+						.append( "canvas" )
+						.attr( "width", w )
+						.attr( "height", h )
+						//.style( "display", "none" )
+
+		var html = svg.attr("version", 1.1)
+					.attr("xmlns", "http://www.w3.org/2000/svg")
+					.node().parentNode.innerHTML;
+
+		var context = canvas.node().getContext("2d");
+		var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
+
+		var image = new Image;
+		image.src = imgsrc;
+		image.onload = function () {
+			context.drawImage( image, 0, 0 );
+
+			var textPosition = [];
+			for ( key in IntersectionSet ){
+				var text = d3.select( "#text" + key )
+
+				if ( text.node() )
+					textPosition.push( { x: text.attr( "x" ), y: text.attr( "y" ), text: IntersectionSet[key].list.size() } );
+			}
+
+			if ( textPosition.length > 0 ){
+				context.font = "15px Open San";
+				for ( i = 0; i < textPosition.length; i++ ){
+					var obj = textPosition[i];
+					context.fillText(obj.text, obj.x, obj.y);
+				}
+			}
+
+			var canvasdata = canvas.node().toDataURL("image/png");
+
+			var pngimg = '<img src="'+canvasdata+'">'; 
+
+
+			var a = document.createElement("a");
+			a.id = "for-download-png"
+			a.download = "Venn.png";
+			a.href = canvasdata;
+			a.click();
+
+			d3.select( "#for-download-png" ).remove()
+			canvas.remove();
+		}
+	}
+
 	this._lastRequireSet = "";
 
 	var clickChartCallback = "";
@@ -980,9 +1044,9 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 	var nameList = [];
 	//	intersect Sets structure:
 	/*	IntersectionSet[ key ]: key must be a string.
-		for set 1, input "1", for set 1∩2 input "1∩2"
+		for set 1, input "1", for set 1in2 input "1in2"
 		combination: list of this intersect set component.
-				For example, 1∩2 is intersect of 1 and 2.
+				For example, 1in2 is intersect of 1 and 2.
 				combination = [ 1, 2 ]
 		list: the elements inside the intersect set.
 	*/
@@ -994,6 +1058,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		combinationList = [ [3], [2], [3, 2], [1], [3, 1], [2, 1], [3, 2, 1] ]
 	*/
 	var combinationList = [];
+	var textPosition = [];
 
 	var predefineColor = [];
 	var predefineShape = [];
@@ -1083,37 +1148,38 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		}
 	}
 
-	predefineIntersectText[2] = [ { "id": "1∩2", "textX": 290, "textY": 330 } ];
-	predefineIntersectText[3] = [ { "id": "1∩2", "textX": 290, "textY": 330 },
-								{ "id": "1∩3", "textX": 240, "textY": 240,  },
-								{ "id": "2∩3", "textX": 340, "textY": 240,  },
-								{ "id": "1∩2∩3", "textX": 290, "textY": 270 } ];
+	predefineIntersectText[2] = [ { "id": "1in2", "textX": 290, "textY": 330 } ];
+	predefineIntersectText[3] = [ { "id": "1in2", "textX": 290, "textY": 330 },
+								{ "id": "1in3", "textX": 240, "textY": 240,  },
+								{ "id": "2in3", "textX": 340, "textY": 240,  },
+								{ "id": "1in2in3", "textX": 290, "textY": 270 } ];
 
-	predefineIntersectText[4] = [ { "id": "1∩2", "textX": 146, "textY": 127 },
-								{ "id": "1∩3", "textX": 194, "textY": 311 },
-								{ "id": "1∩4", "textX": 294, "textY": 368 },
-								{ "id": "2∩3", "textX": 291, "textY": 118 },
-								{ "id": "2∩4", "textX": 389, "textY": 309 },
-								{ "id": "3∩4", "textX": 433, "textY": 141 },
-								{ "id": "1∩2∩3", "textX": 223, "textY": 201 }, 
-								{ "id": "1∩2∩4", "textX": 341, "textY": 328 },
-								{ "id": "1∩3∩4", "textX": 246, "textY": 329 },
-								{ "id": "2∩3∩4", "textX": 366, "textY": 208 },
-								{ "id": "1∩2∩3∩4", "textX": 290, "textY": 278 } ]
+	predefineIntersectText[4] = [ { "id": "1in2", "textX": 146, "textY": 127 },
+								{ "id": "1in3", "textX": 194, "textY": 311 },
+								{ "id": "1in4", "textX": 294, "textY": 368 },
+								{ "id": "2in3", "textX": 291, "textY": 118 },
+								{ "id": "2in4", "textX": 389, "textY": 309 },
+								{ "id": "3in4", "textX": 433, "textY": 141 },
+								{ "id": "1in2in3", "textX": 223, "textY": 201 }, 
+								{ "id": "1in2in4", "textX": 341, "textY": 328 },
+								{ "id": "1in3in4", "textX": 246, "textY": 329 },
+								{ "id": "2in3in4", "textX": 366, "textY": 208 },
+								{ "id": "1in2in3in4", "textX": 290, "textY": 278 } ]
 
-	predefineIntersectText[5] = [ { "id": "1∩2∩3∩4∩5", "textX": 236, "textY": 250 } ];
-	predefineIntersectText[6] = [ { "id": "1∩2∩3∩4∩5∩6", "textX": 200.66335, "textY": 217.0728 } ];
-	predefineIntersectText[7] = [ { "id": "1∩2∩3∩4∩5∩6∩7", "textX": 236, "textY": 250 } ];
+	predefineIntersectText[5] = [ { "id": "1in2in3in4in5", "textX": 236, "textY": 250 } ];
+	predefineIntersectText[6] = [ { "id": "1in2in3in4in5in6", "textX": 200.66335, "textY": 217.0728 } ];
+	predefineIntersectText[7] = [ { "id": "1in2in3in4in5in6in7", "textX": 236, "textY": 250 } ];
 
 	//magic finished
 	predefineColor = [ "","red", "orange", "#BABA00", "green", "blue", "indigo", "violet", "brown" ];
 
 	//define drawing canvas/
 	var w = 650, h = 650;
+
 	var svg = d3.select( "#" + target )
-						.append("svg")
-						.attr("width", w)
-						.attr("height", h);
+				.append("svg")
+				.attr("width", w)
+				.attr("height", h);
 
     var tooltip = d3.select("body").append("div")
 		.attr( "id", "vennToolTip" )
@@ -1140,7 +1206,6 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
     if ( lists )
     	this.updateAllList( lists );
-
 }
 
 exports.BioJSVenn.prototype = VennPrototype;
