@@ -47,7 +47,7 @@ d3.select("#files").on("change" ,function() {
 				for ( key in data ) {
 					var text = data[key].join("\n");
 					d3.select( "#s" + ++counter).node().value = text;
-					d3.select( "#title" + counter ).attr( "value", key);
+					d3.select( "#title" + counter ).node().value = key;
 					d3.select( "#inlineCheckboxLabel" + counter ).text( key );
 					d3.select( "#inlineCheckbox" + counter ).node().disabled = false;
 				}
@@ -75,7 +75,7 @@ d3.select("#load-simple-file").on("click" ,function() {
 	for ( key in data ) {
 		var text = data[key].join("\n");
 		d3.select( "#s" + ++counter).node().value = text;
-		d3.select( "#title" + counter ).attr( "value", key);
+		d3.select( "#title" + counter ).node().value = key;
 		d3.select( "#inlineCheckboxLabel" + counter ).text( key );
 		d3.select( "#inlineCheckbox" + counter ).node().disabled = false;
 	}
