@@ -48,7 +48,7 @@ d3.select("#files").on("change" ,function() {
 				for ( key in data ) {
 					var text = data[key].join("\n");
 					d3.select( "#s" + ++counter).node().value = text;
-					d3.select( "#title" + counter ).attr( "value", key);
+					d3.select( "#title" + counter ).node().value = key;
 					d3.select( "#inlineCheckboxLabel" + counter ).text( key );
 					d3.select( "#inlineCheckbox" + counter ).node().disabled = false;
 				}
@@ -559,7 +559,8 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 				for ( i = 0; i < combination.length; i++ ){
 					d3.select( "#shape" + combination[i] ).transition()
-						.style( "fill-opacity", unselectedShapeFillOpacity );
+						.style( "fill-opacity", unselectedShapeFillOpacity )
+						.attr( "x", -1 );
 				}
 			}
 		}
@@ -695,7 +696,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 									.append( "g" );
 
 
-		shapeGroup.attr( "id", function (d) { return "clip" + d.id } )
+		shapeGroup.attr( "id", function (d) { return "shape" + d.id } )
 				.append("path")
 				.attr( "id", function (d){ return d.id } )
 				.attr( "d", function (d){ return d.d } )
@@ -754,57 +755,37 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		}
 
 		var rotateAngle = 360 / num;
-		var rotateRadian = toRadian( rotateAngle );
-		var baseRadian = toRadian( (180 - rotateAngle) / 2 );
-		var startAngle = 0;
-		var length = 42;
-		var rx = 220, ry = 110;
-		var hypotenuse;
 
-		if ( rotateAngle == 180 ) 
-			hypotenuse = length * 2;
-		else
-			hypotenuse = length / Math.sin( baseRadian ) * Math.sin( rotateRadian );
+		var x = 300, y = 320;
+		var rx = 200, ry = 110;
+		var startAngle = rotateAngle;
 
-		var x = 350, y = 330;
+		var magnitudeA = 55;
+		var magnitudeB = 18;
 
-		//Setup for text, here the variables are array. (for future extension)
-		var tx = [], ty = [], tlength = [], thypotenuse = []; 
-		tx.push( x + rx * 0.8)
-		ty.push( y );
-		tlength.push( tx[0] - x + length);
-		if ( rotateAngle == 180 ) 
-			thypotenuse.push(tlength[0] * 2);
-		else
-			thypotenuse.push(tlength[0] / Math.sin( baseRadian ) * Math.sin( rotateRadian ));
+		var directionA = startAngle + 180;			//in degree
+		var directionB = rotateAngle;	//in degree
+		
+		var nextX = x, nextY = y;
 
-		//for title
-		tx.push( x + rx * 1.2 );
-		ty.push( y );
-		tlength.push( tx[1] - x + length  )
-		if ( rotateAngle == 180 ) 
-			thypotenuse.push(tlength[1] * 2);
-		else
-			thypotenuse.push(tlength[1] / Math.sin( baseRadian ) * Math.sin( rotateRadian ));
+		var graphData = [], textData = [], titleData = [];
 
-		var shapePosition = [], textPosition = [], titlePosition = [];
-
-		shapePosition.push( { "x": x, "y": y } );
-		textPosition.push( { "x": tx[0], "y": ty[0] } )
-		titlePosition.push( { "x": tx[1], "y": ty[1]  } )
-
-		for ( i = 0; i < num; i++ ) {
-			var nextX = shapePosition[i].x + hypotenuse * Math.cos( (Math.PI - baseRadian) + rotateRadian * i );
-			var nextY = shapePosition[i].y + hypotenuse * Math.sin( (Math.PI - baseRadian) + rotateRadian * i );
-			shapePosition.push( { "x": nextX, "y": nextY } );
-
-			var nextTextX = textPosition[i].x + thypotenuse[0] * Math.cos( (Math.PI - baseRadian) + rotateRadian * i );
-			var nextTextY = textPosition[i].y + thypotenuse[0] * Math.sin( (Math.PI - baseRadian) + rotateRadian * i );
-			textPosition.push( { "x": nextTextX, "y": nextTextY } );
-
-			var nextTitleX = titlePosition[i].x + thypotenuse[1] * Math.cos( (Math.PI - baseRadian) + rotateRadian * i );
-			var nextTitleY = titlePosition[i].y + thypotenuse[1] * Math.sin( (Math.PI - baseRadian) + rotateRadian * i );
-			titlePosition.push( { "x": nextTitleX, "y": nextTitleY } );
+		for ( var i = 0; i < num; i++ ){
+			nextX += magnitudeA * Math.cos( toRadian(directionA + rotateAngle * i) )
+			nextY += magnitudeA * Math.sin( toRadian(directionA + rotateAngle * i) )
+			
+			var toBDirection = toRadian(directionB + rotateAngle * i);
+			graphData.push( { id: i + 1, rotate: startAngle + rotateAngle * i, rx: rx, ry: ry,
+							cx: nextX + magnitudeB * Math.cos( toBDirection ),
+							cy: nextY + magnitudeB * Math.sin( toBDirection ) } )
+			textData.push( { id: i + 1, 
+							x: nextX - ( magnitudeB + rx * 0.71 ) * Math.cos( toBDirection ),
+							y: nextY - ( magnitudeB + rx * 0.71 ) * Math.sin( toBDirection ) } )
+			titleData.push( { id: i + 1, 
+							x: nextX - ( magnitudeB + rx ) * Math.cos( toBDirection ),
+							y: nextY - ( magnitudeB + rx ) * Math.sin( toBDirection ) } )			
+			nextX += magnitudeB * Math.cos( toBDirection )
+			nextY += magnitudeB * Math.sin( toBDirection )
 		}
 
 		var transformGroup = svg.append("g")
@@ -813,14 +794,6 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 										+ transform[num - 1].y + ")" )
 
 		addWhiteBackground( transformGroup );
-
-		var graphData = [], textData = [], titleData = [];
-
-		for ( i = 0; i < num; i++ ) {
-			graphData.push( { "id": i + 1, "cx": shapePosition[i].x, "cy": shapePosition[i].y, "rotate": rotateAngle * i, "rx": 220, "ry": 110 } )
-			textData.push( { "id": i + 1, "x": textPosition[i].x , "y": textPosition[i].y } );
-			titleData.push( { "id": i + 1, "x": titlePosition[i].x , "y": titlePosition[i].y } );
-		}
 
 		var defs = transformGroup.append( "defs" )
 								.selectAll("_")
@@ -858,6 +831,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 		drawClip( combinationList, transformGroup );
 
+		
 		var textGroup = transformGroup.selectAll("_")
 									.data(textData)
 									.enter()
@@ -872,7 +846,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 					else
 						return IntersectionSet[ d.id.toString() ].list.size() 
 				} )
-
+		
 		var titleGroup = transformGroup.selectAll("_")
 								.data(titleData)
 								.enter()
@@ -895,7 +869,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 			
 			transformGroup.append( "text" )
 				.attr( "id", "text" + allIntersectText )
-				.attr( "x", x - length ).attr( "y", y )
+				.attr( "x", x ).attr( "y", y - magnitudeB )
 				.text( function () {
 					if ( !IntersectionSet[ allIntersectText ] )
 						return 0;
@@ -909,7 +883,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 		var clip = function ( reuseID, group, clipID, i, j ){
 
-			for ( var k = 0; k < combination[i].length; k++ ){
+			for ( var k = 0; k < combination[i][j].length; k++ ){
 				group = group.append( "g" )
 							.attr( "clip-path", "url(#" + reuseID + combination[i][j][k] + ")" );
 			}
@@ -1053,6 +1027,8 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		var html = svg.attr("version", 1.1)
 					.attr("xmlns", "http://www.w3.org/2000/svg")
 					.node().parentNode.innerHTML;
+
+		var test = svg.selectAll( "svg text" );
 
 		var context = canvas.node().getContext("2d");
 		var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
@@ -1234,10 +1210,10 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 	//predefine ellipsis for 5 sets venn diagram
 	predefineShape[5] = [	{ "id": 1, "cx": 263, "cy": 213,"rotate": 90,  "textX": 258, "textY": 50  },
-								{ "id": 2, "cx": 280, "cy": 262,"rotate": 162, "textX": 438, "textY": 216 },
-								{ "id": 3, "cx": 241, "cy": 292,"rotate": 54,  "textX": 330, "textY": 433 },
-								{ "id": 4, "cx": 199, "cy": 266,"rotate": 126, "textX": 90,  "textY": 409 },
-								{ "id": 5, "cx": 212, "cy": 216,"rotate": 18,  "textX": 42,  "textY": 166 }];
+							{ "id": 2, "cx": 280, "cy": 262,"rotate": 162, "textX": 438, "textY": 216 },
+							{ "id": 3, "cx": 241, "cy": 292,"rotate": 54,  "textX": 330, "textY": 433 },
+							{ "id": 4, "cx": 199, "cy": 266,"rotate": 126, "textX": 90,  "textY": 409 },
+							{ "id": 5, "cx": 212, "cy": 216,"rotate": 18,  "textX": 42,  "textY": 166 }];
 
 	//predefine triangles for 6 sets venn diagram
 	predefineShape[6] = [	{ "id": 1, "textX": 115, "textY": 120, "d": "M  51.277  38.868 L 255.580 191.186 L 190.900 269.427 Z" },
@@ -1248,13 +1224,13 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 							{ "id": 6, "textX": 135, "textY": 290, "d": "M  60.184 344.046 L 262.476 109.903 L 223.276 253.962 Z" }];
 
 	//predefine ellipsis for 7 sets venn diagram
-	predefineShape[7] = [	{ "id": 1, "cx": 220, "cy": 228,"rotate": 0,   "textX": 40,  "textY": 228 },
-								{ "id": 2, "cx": 216, "cy": 246,"rotate": 51,  "textX": 96,  "textY": 117 },
-								{ "id": 3, "cx": 246, "cy": 217,"rotate": 102, "textX": 273, "textY": 49  },
-								{ "id": 4, "cx": 289, "cy": 222,"rotate": 154, "textX": 434, "textY": 152 },
-								{ "id": 5, "cx": 310, "cy": 258,"rotate": 25,  "textX": 458, "textY": 341 },
-								{ "id": 6, "cx": 296, "cy": 298,"rotate": 77,  "textX": 330, "textY": 472 },
-								{ "id": 7, "cx": 256, "cy": 311,"rotate": 135, "textX": 132, "textY": 440 }];
+	predefineShape[7] = [	{ "id": 1, "cx": 220, "cy": 288,"rotate": 0,   "textX": 40,  "textY": 228 },
+							{ "id": 2, "cx": 216, "cy": 246,"rotate": 51,  "textX": 96,  "textY": 117 },
+							{ "id": 3, "cx": 246, "cy": 217,"rotate": 102, "textX": 273, "textY": 49  },
+							{ "id": 4, "cx": 289, "cy": 222,"rotate": 154, "textX": 434, "textY": 152 },
+							{ "id": 5, "cx": 310, "cy": 258,"rotate": 25,  "textX": 458, "textY": 341 },
+							{ "id": 6, "cx": 296, "cy": 298,"rotate": 77,  "textX": 330, "textY": 472 },
+							{ "id": 7, "cx": 256, "cy": 311,"rotate": 135, "textX": 132, "textY": 440 }];
 
 	for ( i = 4; i <= this._N; i++ ) {
 		//6 sets Venn diagram is a special case
