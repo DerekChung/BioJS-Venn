@@ -4,8 +4,88 @@ var sets = require('simplesets')
 
 var VennPrototype = {
 
+
 	autoLayout: true,
 
+/**
+* Save the Venn diagram into PNG.
+*/
+	saveAsPNG: function(){
+		var canvas = d3.select( "body" )
+						.append( "canvas" )
+						.attr( "width", w )
+						.attr( "height", h )
+						.style( "display", "none" )
+		//get the html from svg element
+		var html = svg.attr("version", 1.1)
+					.attr("xmlns", "http://www.w3.org/2000/svg")
+					.node().parentNode.innerHTML;
+
+		var context = canvas.node().getContext("2d");
+		var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
+
+		var image = new Image;
+		image.src = imgsrc;
+
+		var IntersectionSet = this._getIntersectSets();
+
+		image.onload = function () {
+			context.drawImage( image, 0, 0 );
+
+			//try to add back text into the graph as changing from svg to canvas lose all <text> element.
+			var textPosition = [];
+			for ( key in IntersectionSet ){
+				var text = d3.select( "#text" + key )
+
+				if ( text.node() )
+					textPosition.push( { x: text.attr( "x" ), y: text.attr( "y" ), text: IntersectionSet[key].list.size() } );
+			}
+
+			if ( textPosition.length > 0 ){
+				context.font = "15px Open San";
+				for ( i = 0; i < textPosition.length; i++ ){
+					var obj = textPosition[i];
+					context.fillText(obj.text, obj.x, obj.y);
+				}
+			}
+
+			//add back the title
+			textPosition = [];
+			for ( var i = 1; i <= 7; i++ ) {
+				var text = d3.select( "#titleText" + i )
+				if ( text.node() )
+					textPosition.push( { x: text.attr( "x" ), y: text.attr( "y" ), text: nameList[ i - 1 ] } );
+			}
+
+			if ( textPosition.length > 0 ){
+				context.font = "15px Open San";
+				for ( i = 0; i < textPosition.length; i++ ){
+					context.fillStyle = predefineColor[ i + 1 ];
+					var obj = textPosition[i];
+					context.fillText(obj.text, obj.x, obj.y);
+				}
+			}
+
+			var canvasdata = canvas.node().toDataURL("image/png");
+
+			var pngimg = '<img src="'+canvasdata+'">'; 
+
+			//append <a> element on the html
+			var a = document.createElement("a");
+			a.id = "for-download-png"
+			a.download = "Venn.png";
+			a.href = canvasdata;
+			a.click();
+
+			//remove the <a>
+			d3.select( "#for-download-png" ).remove()
+			canvas.remove();
+		}
+	},
+/**
+ * Save last required Set if there is any. User can make requirement 
+ * by clicking on the Venn digram or via provide function getRequiredList()
+ */
 	saveLastRequireSets: function () {
 
 		var key = this._getlastRequireSet();
@@ -19,6 +99,9 @@ var VennPrototype = {
 
 	},
 
+/**
+ * Save all set including all sets and their intersect combination.
+ */
 	saveAllSets: function () {
 		var intersect = this._getIntersectSets();
 		var textToWrite = "";
@@ -34,29 +117,67 @@ var VennPrototype = {
 		this._savefile( "All Lists",  textToWrite )
 
 	},
-
-	setClickCallback: function ( f ){
-		this._setclickChartCallback( f );
+/**
+ * Custom click callback function for Venn diagram. In the other words, 
+ * define behavior after clicking on the Venn diagram. This function 
+ * will receive an object after clikcing on a specific set in the Venn diagram. 
+ * This is the structure of the object: { title, list, combination }. 
+ * "title" (String) is the name of the set, "list" (Array) contain all elements
+ * of the set, "combination" (Array) is component index of the set.
+ * For example, if user click on "A intersect B" area, where A is List 1 and B is List 2
+ * Then title is "A intersect B"
+ * "list" contain all elements of "A intersect B"
+ * combination is an array contain two element: [ 1, 2 ]
+ * @param {Function} callback click callback function
+ */
+	setClickCallback: function ( callback ){
+		this._setclickChartCallback( callback );
 	},
 
+/**
+* Number of sets in the Venn diagram right now
+* @return {Integer} the number of sets in the Venn diagram
+*/
 	getNumberOfSets: function () {
 		return this._listSets.length;
 	},
 
+/**
+* Get the upper limit number of sets
+* @return {Integer} upper limit of sets
+*/
 	getMaxVennSets: function () {
 		return this._N;
 	},
 
+/**
+* Switch to Automatic Venn diagram Layout.
+* When there are more than 5 sets,
+* the automatic layout will generate Euler diagram instead.
+*/
 	switchToAutoMode: function () {
 		this.autoLayout = true;
 		this._updateGraph();
 	},
 
+/**
+* Switch to predefined Venn diagram Layout.
+* When there are more than 6 sets,
+* the predefined layout will generate Euler diagram instead.
+*/
 	switchToPredfinedMode: function () {
 		this.autoLayout = false;
 		this._updateGraph();
 	},
 
+/**
+* Update the title of specific set.
+* Remind that the index should start from 1 instead of 0
+* For example, if you want to set the first set name "movies",
+* then you should index = 1, name = "movies"
+* @param {Number} index the set need to be modified name 
+* @param {String} name new name for the set
+*/
 	updateListName: function ( index, name ){
 
 		if ( this._listSets[index] )
@@ -64,6 +185,19 @@ var VennPrototype = {
 
 	},
 
+/**
+* Get a specific set. If user want to get Set 1, Set 2, and Set 3 interect,
+* input an Array = [ 1, 2, 3 ]. If user only want Set 2, then input an Array
+* only contain one element [ 2 ].
+* This function return an object { title, list }:
+* "title" is the name of the required set
+* "list" contains all the element of the required set.
+* Please remain that title is the name of the set.
+* If user require Set 1 and Set 2 intersect where Set 1 names "A" and Set 2 names "B",
+* then "title" is " A intersect B ".
+* @param {Array} requireList a list of required set index
+* @return {Object} return object contain two elements, "title" name of the required set,and "list" elements of the set. 
+*/
 	getRequiredList: function( requireList ){
 		
 		if ( requireList instanceof Array ) {
@@ -91,6 +225,18 @@ var VennPrototype = {
 
 	},
 
+/**
+* Get a specific set by name. If user want to get 
+* Set 1(name: "A"), Set 2(name: "B"), and Set 3(name: "C") interect,
+* input an Array = [ "A", "B", "C" ]. If user only want Set 2(name: B), then input an Array
+* only contain one element [ "B" ].
+* This function return an object { title, list }:
+* "title" is the name of the required set
+* "list" contains all the element of the required set.
+* Please remain that title is the name of the set.
+* @param {Array} requireList a list of required set name
+* @return {Object} return object contain two elements, "title" name of the required set,and "list" elements of the set. 
+*/
 	getRequiredListByName: function( requireList ){
 
 		if ( requireList instanceof Array ) {
@@ -110,6 +256,14 @@ var VennPrototype = {
 
 	},
 
+/**
+* Get all sets including their combinations.
+* This function return an array of object { title, list }:
+* "title" is the name of set.
+* "list" contains all the element of set.
+* Please remain that title is the name of the set.
+* @return {Array} array of objects which contain title (set name) and element
+*/
 	getAllIntersectSets: function(){
 		var ans = [];
 		var intersectList = this._getIntersectSets();
@@ -124,6 +278,17 @@ var VennPrototype = {
 		return ans;
 	},
 
+/**
+* Update the whole set.
+* This function provide an interface to update Set content.
+* If user want to update List 1 name to "A", and element = [ "Monday", "Tuesday" ],
+* then index = 1, name = "A", list = [ "Monday", "Tuesday" ].
+* If user only want to update the set content, then name = null.
+* Remind that parameter list will completely replace the exist content in the set.
+* @param {Number} index index of the set need to be modified
+* @param {String} name new name for the set. If null, keep the name
+* @param {Array} list a list of element replaced the desired set
+*/
 	updateList: function ( index, name, list ){
 
 		if ( this._listSets[index] ) {
@@ -165,6 +330,12 @@ var VennPrototype = {
 		return false;
 	},
 
+/**
+* add one more set to the Venn diagram if possible.
+* If the the Venn diagram is already full, then nothing happen.
+* @param {String} name name of the new set
+* @param {Array} list list of element of the new set
+*/
 	addList: function ( name, list ) {
 		if ( this._listSets.length  == this._N )
 			return;
@@ -182,6 +353,14 @@ var VennPrototype = {
 
 	},
 
+/**
+* parse and JSON to sets.
+* Here is the structure of input:
+* "{ "A": [ 1, 2, 3, 4 ], 
+*   "B": [ 2, 3, 4, 7 ] }"
+* key will be the name of the set
+* @param {String} input json text contain all the sets and corresponding name
+*/
 	readJSON: function( text ) {
 		
 		try {
@@ -194,6 +373,15 @@ var VennPrototype = {
 	    }
 	},
 
+/**
+* Replace all list with the given data
+* Here is the structure of input:
+* { "A": [ 1, 2, 3, 4 ], 
+*   "B": [ 2, 3, 4, 7 ] }
+* key will be the name of the set.
+* Compare to readJSON(), this function accept object.
+* @param {Object} data an input object contain all the sets and coreponding name
+*/
 	updateAllList: function ( data ) {
 		
 		this._listSets = [];
@@ -246,10 +434,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		var combination = IntersectionSet[ id ].combination;
 		var text = "";
 		var arr = [];
-		/*
-		if ( nameList[ combination[0] - 1 ] )
-			text =  nameList[ combination[0] - 1 ];
-		*/
+
 		text = getNameByCombination( combination );
 
 		lastRequireSet = id;
@@ -335,10 +520,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		var text =  nameList[ combination[0] - 1 ];
 
 		for ( i = 1; i < combination.length; i++ ){
-			/*
-			if ( !nameList[ combination[i] - 1] )
-				continue;
-			*/
+			
 			if ( text != "" )
 				text += " in " + nameList[ combination[i] - 1 ];
 			else
@@ -416,14 +598,14 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 			.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
 			.attr("rx", function (d) { return d.rx} ).attr("ry", function (d) { return d.ry } );
 
-		/* This part is used to create a fake Stroke for the clipping. However, this part is not longer used.
-		defs.append( "clipPath" )
-			.attr( "id", function (d) { return "clipL" + d.id } )
-			.append( "ellipse" )
-			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
-			.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
-			.attr("rx", function (d) { return d.rx + StrokeWidth} ).attr("ry", function (d) { return d.ry + StrokeWidth} );
-		*/
+		// This part is used to create a fake Stroke for the clipping. However, this part is not longer used.
+		//defs.append( "clipPath" )
+		//	.attr( "id", function (d) { return "clipL" + d.id } )
+		//	.append( "ellipse" )
+		//	.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
+		//	.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
+		//	.attr("rx", function (d) { return d.rx + StrokeWidth} ).attr("ry", function (d) { return d.ry + StrokeWidth} );
+		//
 		var shapeGroup = transformGroup.selectAll("_")
 									.data(jsonData)
 									.enter()
@@ -454,12 +636,11 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 				} )
 				.attr("x", function (d) { return d.textX } ).attr("y", function(d){ return d.textY });
 
-		/*
-		combinationList -> 	4
-							3 4,3
-							2 4,2 3,2 4,3,2
-							1 4,1 4,3,1 2,1 4,2,1  
-		*/
+		//combinationList -> 	4
+		//					3 4,3
+		//					2 4,2 3,2 4,3,2
+		//					1 4,1 4,3,1 2,1 4,2,1  
+		//
 
 		drawClip( combinationList, transformGroup );
 
@@ -473,16 +654,14 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		if ( jsonData.length == 0 )
 			return;
 
-		/*  How to seperate Polygon and intersect?
-			Take a look at the predefine JSON data at the very begining.
-			For interesct area, the id is String. (e.g. "1_2")
-		
-		Here is how to check is the data for intersect or for shape.
-
-		if ( typeof jsonData[1].id == 'string' || jsonData.id instanceof String) {
-
-		}
-		*/
+		//  How to seperate Polygon and intersect?
+		//	Take a look at the predefine JSON data at the very begining.
+		//	For interesct area, the id is String. (e.g. "1_2")
+		//
+		//Here is how to check is the data for intersect or for shape.
+		//if ( typeof jsonData[1].id == 'string' || jsonData.id instanceof String) {
+		//
+		//}
 
 		var targetTransform = jsonData.length - 1;
 
@@ -532,13 +711,6 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 				else
 					return IntersectionSet[ d.id.toString() ].list.size() } )
 			.attr("x", function (d) { return d.textX } ).attr("y", function(d){ return d.textY });
-
-		/*
-		combinationList -> 	4
-							3 4,3
-							2 4,2 3,2 4,3,2
-							1 4,1 4,3,1 2,1 4,2,1  
-		*/
 
 		drawClip( combinationList, transformGroup );
 
@@ -674,10 +846,10 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 					return nameList[d.id - 1];
 				} );
 
-		//text lable for the size of intersect of all lists.
+		/*text lable for the size of intersect of all lists.*/
 		if ( num >= 2 ) {
 			var allIntersectText = "1"
-			//generate 1in2in......
+			/*generate 1in2in......*/
 			for ( i = 2; i <= num; i++ )
 				allIntersectText += "in" + i
 			
@@ -831,75 +1003,6 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		return getNameByCombination(combination);
 	}
 
-	this.saveAsPNG = function( ){
-		var canvas = d3.select( "body" )
-						.append( "canvas" )
-						.attr( "width", w )
-						.attr( "height", h )
-						.style( "display", "none" )
-
-		var html = svg.attr("version", 1.1)
-					.attr("xmlns", "http://www.w3.org/2000/svg")
-					.node().parentNode.innerHTML;
-
-		var test = svg.selectAll( "svg text" );
-
-		var context = canvas.node().getContext("2d");
-		var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
-
-		var image = new Image;
-		image.src = imgsrc;
-		image.onload = function () {
-			context.drawImage( image, 0, 0 );
-
-			var textPosition = [];
-			for ( key in IntersectionSet ){
-				var text = d3.select( "#text" + key )
-
-				if ( text.node() )
-					textPosition.push( { x: text.attr( "x" ), y: text.attr( "y" ), text: IntersectionSet[key].list.size() } );
-			}
-
-			if ( textPosition.length > 0 ){
-				context.font = "15px Open San";
-				for ( i = 0; i < textPosition.length; i++ ){
-					var obj = textPosition[i];
-					context.fillText(obj.text, obj.x, obj.y);
-				}
-			}
-
-			textPosition = [];
-			for ( var i = 1; i <= 7; i++ ) {
-				var text = d3.select( "#titleText" + i )
-				if ( text.node() )
-					textPosition.push( { x: text.attr( "x" ), y: text.attr( "y" ), text: nameList[ i - 1 ] } );
-			}
-
-			if ( textPosition.length > 0 ){
-				context.font = "15px Open San";
-				for ( i = 0; i < textPosition.length; i++ ){
-					context.fillStyle = predefineColor[ i + 1 ];
-					var obj = textPosition[i];
-					context.fillText(obj.text, obj.x, obj.y);
-				}
-			}
-
-			var canvasdata = canvas.node().toDataURL("image/png");
-
-			var pngimg = '<img src="'+canvasdata+'">'; 
-
-
-			var a = document.createElement("a");
-			a.id = "for-download-png"
-			a.download = "Venn.png";
-			a.href = canvasdata;
-			a.click();
-
-			d3.select( "#for-download-png" ).remove()
-			canvas.remove();
-		}
-	}
-
 	this._updatelastRequireSet = function( key ){
 		lastRequireSet = key;
 	}
@@ -951,20 +1054,19 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 	//( _listSets[i],name is updated. ) This one must also be updated.
 	var nameList = [];
 	//	intersect Sets structure:
-	/*	IntersectionSet[ key ]: key must be a string.
-		for set 1, input "1", for set 1in2 input "1in2"
-		combination: list of this intersect set component.
-				For example, 1in2 is intersect of 1 and 2.
-				combination = [ 1, 2 ]
-		list: the elements inside the intersect set.
-	*/
+	//	IntersectionSet[ key ]: key must be a string.
+	//	for set 1, input "1", for set 1in2 input "1in2"
+	//	combination: list of this intersect set component.
+	//			For example, 1in2 is intersect of 1 and 2.
+	//			combination = [ 1, 2 ]
+	//	list: the elements inside the intersect set.
  	var IntersectionSet;
 
-	/*
-		combinationList: this array is used for store all the combinations.
-		For example, for a 3 sets venn diagram
-		combinationList = [ [3], [2], [3, 2], [1], [3, 1], [2, 1], [3, 2, 1] ]
-	*/
+	
+	//	combinationList: this array is used for store all the combinations.
+	//	For example, for a 3 sets venn diagram
+	//	combinationList = [ [3], [2], [3, 2], [1], [3, 1], [2, 1], [3, 2, 1] ]
+	
 	var combinationList = [];
 	var textPosition = [];
 
