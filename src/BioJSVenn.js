@@ -410,7 +410,16 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 	if ( !target )
 		return;
-
+//generate combination list. If the user want to generate all the combination from 1 to 4,
+//then assign start = 1, end = 4.
+//ans 			 -> 	[4]
+//						[3], [3, 4]
+//						[2], [2, 4],[2,3],[2, 3, 4],
+//						[1], [1, 4], [1, 3], [1, 3, 4], [1, 2], [1, 2, 4],[1, 2,3], [1, 2, 3, 4]
+//
+//@param {Number} start combination start from
+//@param {Number} end combination start at
+//@return {Array} an array contain all the combination.
 	var generateCombination = function ( start, end ){
 		var ans = [];
 
@@ -428,6 +437,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		return ans;
 	}
 
+//call this when mouse click svg element event is triggered
 	var mouseClickCall = function ( id ) {
 
 
@@ -447,7 +457,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 			clickChartCallback( { title: text, list: arr, combination: combination  } )
 	}
 
-	//call this when mouse over event is triggered
+//call this when mouse over svg element event is triggered
 	var mouseOverCall = function ( target, id ){
 
 		d3.select(target).transition()
@@ -535,7 +545,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		return text;
 	}
 
-	//call this when mouse out event is triggered
+//call this when mouse out svg event is triggered
 	var mouseOutCall = function (target, id) {
 		d3.select(target).transition()
 			.style("fill-opacity", function () {
@@ -570,12 +580,15 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		d3.select("#vennToolTip").transition().style("opacity", 0 ); 
 	};
 
+//callback function when the mouse move across the svg element.
 	var mouseMoveCall = function (traget) {
 		d3.select("#vennToolTip")
 			.style("left", (d3.event.pageX - 250) + "px")
 			.style("top", (d3.event.pageY - 5) + "px")	
 	};
 
+//draw the predefined layout.
+//@param {Array} jsonData JSON object array which contain all the predefined inforation.
 	var drawEllipse = function ( jsonData ){
 
 		if ( jsonData.length == 0 )
@@ -655,6 +668,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		    
 	};
 
+//similar to drawEllipse, this one is polygon version.
 	var drawPath = function ( jsonData ){
 
 		if ( jsonData.length == 0 )
@@ -744,7 +758,10 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 						return IntersectionSet[ d.id.toString() ].list.size() } );
 	}
 
-//automatically generated the Venn digram
+//automatically generated the Venn digram. The graph is
+//rotationally symmetrical arrangement devised by Branko Grünbaum.
+//Only can generate Venn diagram up to 5 sets.
+//This wll only generate Euler diagram.
 //@param {Number} num number of set want to be generated
 	var drawVenn = function (num) {
 
@@ -762,7 +779,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		var magnitudeB = 18;
 
 		var directionA = startAngle + 180;			//in degree
-		var directionB = rotateAngle;	//in degree
+		var directionB = rotateAngle;				//in degree
 		
 		var nextX = x, nextY = y;
 
@@ -877,6 +894,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		}
 	}
 
+//create clipping, every draw garph function is depend of this for creating intersect area.
 	var drawClip = function ( combination, drawOn ) {
 
 		var clip = function ( reuseID, group, clipID, i, j ){
@@ -914,6 +932,8 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		}
 	}
 
+//add the white backgroud for the svg
+//otherwise, the user may get a transparent background svg
 	var addWhiteBackground = function ( drawOn ) {
 		drawOn.append( "rect" )
 			.attr( "fill", "white" )
@@ -1029,6 +1049,9 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		return lastRequireSet;
 	}
 
+//save the text into a file.
+//@param {String} fileName the name of the file which is going to be downloaded.
+//@param {String} textToWrite the content of the file 
 	this._savefile = function ( fileName ,textToWrite ) {
 		var textFileAsBlob = new Blob([textToWrite], {type:'text/plain'});
 		var fileNameToSaveAs = fileName;
