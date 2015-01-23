@@ -516,6 +516,11 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 			} );
 	};
 
+//Get set nambe by a list of combination/
+//For example, if List 1 intersect List 2 name is needed,
+//then combination = [ 1, 2 ]
+//@param {Array} combination Array of set index
+//@return {String} nume of the required set
 	var getNameByCombination = function( combination ) {
 		var text =  nameList[ combination[0] - 1 ];
 
@@ -591,6 +596,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 								.enter()
 								.append("g");
 
+		//use for clipping later.
 		defs.append( "clipPath" )
 			.attr( "id", function (d) { return "clip" + d.id } )
 			.append( "ellipse" )
@@ -719,6 +725,10 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 	};
 
+//Put predefined text label on the graph.
+//This method called by drawEplise() and drawPath()
+//@param {Number} numberOfSets number of sets have be drawn
+//@param {Object} drawSVG on which svg object should put text label
 	var putPredefinedTextLabel = function( numberOfSets, drawSVG ){
 		drawSVG.selectAll("_")
 				.data( predefineIntersectText[numberOfSets] )
@@ -734,6 +744,8 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 						return IntersectionSet[ d.id.toString() ].list.size() } );
 	}
 
+//automatically generated the Venn digram
+//@param {Number} num number of set want to be generated
 	var drawVenn = function (num) {
 
 		var toRadian = function ( degree ) {
@@ -910,6 +922,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 	}
 
+//redraw the whole graph immediately
 	this._updateGraph = function () {
 
 		svg.select("*").remove();
@@ -928,6 +941,8 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		}
 	};
 
+//comput all intersection set base on the sets provided by user
+//@return {object} all intersection set
 	this._generateAllIntersectSets = function ( ){
 
 		var ans = {};
@@ -953,6 +968,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		return { list: ans };
 	}; 
 
+//
 	this._updateIntersectSets = function ( ans ) {
 
 		IntersectionSet = {};
@@ -966,6 +982,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 				IntersectionSet[ combinationList[i][j].reverse().join("in") ]["combination"] = combinationList[i][j];
 	};
 
+//update a specific set name
 	this._updateName = function ( i, name ){
 		this._listSets[i].name = name;
 		nameList[i] = name;
@@ -976,6 +993,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 			text.text( name );
 	}
 
+//update text when the intersection set is changed
 	this._updateText = function () {
 		
 		if ( !IntersectionSet )

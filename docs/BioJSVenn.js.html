@@ -126,12 +126,10 @@
 					.attr( &quot;width&quot;, w )
 					.attr( &quot;height&quot;, h )
 					.style( &quot;display&quot;, &quot;none&quot; )
-
+	//get the html from svg element
 	var html = svg.attr(&quot;version&quot;, 1.1)
 				.attr(&quot;xmlns&quot;, &quot;http://www.w3.org/2000/svg&quot;)
 				.node().parentNode.innerHTML;
-
-	var test = svg.selectAll( &quot;svg text&quot; );
 
 	var context = canvas.node().getContext(&quot;2d&quot;);
 	var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
@@ -144,6 +142,7 @@
 	image.onload = function () {
 		context.drawImage( image, 0, 0 );
 
+		//try to add back text into the graph as changing from svg to canvas lose all &lt;text&gt; element.
 		var textPosition = [];
 		for ( key in IntersectionSet ){
 			var text = d3.select( &quot;#text&quot; + key )
@@ -160,6 +159,7 @@
 			}
 		}
 
+		//add back the title
 		textPosition = [];
 		for ( var i = 1; i &lt;= 7; i++ ) {
 			var text = d3.select( &quot;#titleText&quot; + i )
@@ -180,13 +180,14 @@
 
 		var pngimg = '&lt;img src=&quot;'+canvasdata+'&quot;&gt;'; 
 
-
+		//append &lt;a&gt; element on the html
 		var a = document.createElement(&quot;a&quot;);
 		a.id = &quot;for-download-png&quot;
 		a.download = &quot;Venn.png&quot;;
 		a.href = canvasdata;
 		a.click();
 
+		//remove the &lt;a&gt;
 		d3.select( &quot;#for-download-png&quot; ).remove()
 		canvas.remove();
 	}
@@ -626,9 +627,9 @@
             </thead>
             <tbody>
               <tr>
-                <td>an</td>
+                <td>data</td>
                 <td>Object</td>
-                <td>&lt;p&gt;input object contain all the sets and coreponding name&lt;/p&gt;</td>
+                <td>&lt;p&gt;an input object contain all the sets and coreponding name&lt;/p&gt;</td>
               </tr>
             </tbody>
           </table>
@@ -767,6 +768,11 @@ var mouseOverCall = function ( target, id ){
 		} );
 };
 
+//Get set nambe by a list of combination/
+//For example, if List 1 intersect List 2 name is needed,
+//then combination = [ 1, 2 ]
+//@param {Array} combination Array of set index
+//@return {String} nume of the required set
 var getNameByCombination = function( combination ) {
 	var text =  nameList[ combination[0] - 1 ];
 
@@ -842,6 +848,7 @@ var drawEllipse = function ( jsonData ){
 							.enter()
 							.append(&quot;g&quot;);
 
+	//use for clipping later.
 	defs.append( &quot;clipPath&quot; )
 		.attr( &quot;id&quot;, function (d) { return &quot;clip&quot; + d.id } )
 		.append( &quot;ellipse&quot; )
@@ -970,6 +977,10 @@ var drawPath = function ( jsonData ){
 
 };
 
+//Put predefined text label on the graph.
+//This method called by drawEplise() and drawPath()
+//@param {Number} numberOfSets number of sets have be drawn
+//@param {Object} drawSVG on which svg object should put text label
 var putPredefinedTextLabel = function( numberOfSets, drawSVG ){
 	drawSVG.selectAll(&quot;_&quot;)
 			.data( predefineIntersectText[numberOfSets] )
@@ -985,6 +996,8 @@ var putPredefinedTextLabel = function( numberOfSets, drawSVG ){
 					return IntersectionSet[ d.id.toString() ].list.size() } );
 }
 
+//automatically generated the Venn digram
+//@param {Number} num number of set want to be generated
 var drawVenn = function (num) {
 
 	var toRadian = function ( degree ) {
@@ -1160,6 +1173,7 @@ for ( var j = 0; j &lt; combination[i].length; j++  ){
 
 	}
 
+//redraw the whole graph immediately
 	this._updateGraph = function () {
 
 		svg.select(&quot;*&quot;).remove();
@@ -1178,6 +1192,8 @@ else
 		}
 	};
 
+//comput all intersection set base on the sets provided by user
+//@return {object} all intersection set
 	this._generateAllIntersectSets = function ( ){
 
 		var ans = {};
@@ -1203,6 +1219,7 @@ for (var attrname in result) { ans[attrname] = result[attrname]; }
 		return { list: ans };
 	}; 
 
+//
 	this._updateIntersectSets = function ( ans ) {
 
 		IntersectionSet = {};
@@ -1216,6 +1233,7 @@ for ( j = 0; j &lt; combinationList[i].length; j++ )
 	IntersectionSet[ combinationList[i][j].reverse().join(&quot;in&quot;) ][&quot;combination&quot;] = combinationList[i][j];
 	};
 
+//update a specific set name
 	this._updateName = function ( i, name ){
 		this._listSets[i].name = name;
 		nameList[i] = name;
@@ -1226,6 +1244,7 @@ for ( j = 0; j &lt; combinationList[i].length; j++ )
 text.text( name );
 	}
 
+//update text when the intersection set is changed
 	this._updateText = function () {
 		
 		if ( !IntersectionSet )
