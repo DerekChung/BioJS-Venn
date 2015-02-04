@@ -1,101 +1,50 @@
+// Hello.
+//
+// This is JSHint, a tool that helps to detect errors and potential
+// problems in your JavaScript code.
+//
+// To start, simply enter some JavaScript anywhere on this page. Your
+// report will appear on the right side.
+//
+// Additionally, you can toggle specific options in the Configure
+// menu.
+
+/*global d3:false */
+/*global require:false */
+/*global exports:false */
+
 require('d3');
 
-var sets = require('simplesets')
+var sets = require('simplesets');
 
 var VennPrototype = {
 
 
 	autoLayout: true,
-
 /**
-* Save the Venn diagram into PNG.
+* Get the upper limit number of sets
+* @return {Integer} upper limit of sets
 */
-	saveAsPNG: function(){
-		var canvas = d3.select( "body" )
-						.append( "canvas" )
-						.attr( "width", w )
-						.attr( "height", h )
-						.style( "display", "none" )
-		//get the html from svg element
-		var html = svg.attr("version", 1.1)
-					.attr("xmlns", "http://www.w3.org/2000/svg")
-					.node().parentNode.innerHTML;
-
-		var context = canvas.node().getContext("2d");
-		var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
-
-		var image = new Image;
-		image.src = imgsrc;
-
-		var IntersectionSet = this._getIntersectSets();
-
-		image.onload = function () {
-			context.drawImage( image, 0, 0 );
-
-			//try to add back text into the graph as changing from svg to canvas lose all <text> element.
-			var textPosition = [];
-			for ( key in IntersectionSet ){
-				var text = d3.select( "#text" + key )
-
-				if ( text.node() )
-					textPosition.push( { x: text.attr( "x" ), y: text.attr( "y" ), text: IntersectionSet[key].list.size() } );
-			}
-
-			if ( textPosition.length > 0 ){
-				context.font = "15px Open San";
-				for ( i = 0; i < textPosition.length; i++ ){
-					var obj = textPosition[i];
-					context.fillText(obj.text, obj.x, obj.y);
-				}
-			}
-
-			//add back the title
-			textPosition = [];
-			for ( var i = 1; i <= 7; i++ ) {
-				var text = d3.select( "#titleText" + i )
-				if ( text.node() )
-					textPosition.push( { x: text.attr( "x" ), y: text.attr( "y" ), text: nameList[ i - 1 ] } );
-			}
-
-			if ( textPosition.length > 0 ){
-				context.font = "15px Open San";
-				for ( i = 0; i < textPosition.length; i++ ){
-					context.fillStyle = predefineColor[ i + 1 ];
-					var obj = textPosition[i];
-					context.fillText(obj.text, obj.x, obj.y);
-				}
-			}
-
-			var canvasdata = canvas.node().toDataURL("image/png");
-
-			var pngimg = '<img src="'+canvasdata+'">'; 
-
-			//append <a> element on the html
-			var a = document.createElement("a");
-			a.id = "for-download-png"
-			a.download = "Venn.png";
-			a.href = canvasdata;
-			a.click();
-
-			//remove the <a>
-			d3.select( "#for-download-png" ).remove()
-			canvas.remove();
-		}
+	getMaxVennSets: function () {
+		return this._N;
 	},
 /**
- * Save last required Set if there is any. User can make requirement 
+ * Save last queried Set if there is any. User can make query 
  * by clicking on the Venn digram or via provide function getRequiredList()
  */
-	saveLastRequireSets: function () {
+	saveLastQueriedSets: function () {
 
 		var key = this._getlastRequireSet();
-
+		if ( key === "" ) {
+			console.log('No queried set. Save last queried Set if there is any. User can make query by clicking on the Venn digram or via provide function getRequiredList()');
+			return
+		}
 		var intersect = this._getIntersectSets();
 		var combination = intersect[ key ].combination;
 		var listName = this._getIntersectSetsName(combination);
 		var textToWrite = listName + ":\n" + intersect[ key ].list.array().join( "\n" );
 		
-		this._savefile( listName,  textToWrite )
+		this._savefile( listName,  textToWrite );
 
 	},
 
@@ -107,14 +56,16 @@ var VennPrototype = {
 		var textToWrite = "";
 		var combination, listName;
 
-		for ( key in intersect ) {
-			combination = intersect[ key ].combination;
-			listName = this._getIntersectSetsName(combination);
-			textToWrite += listName + ":\n" + intersect[ key ].list.array().join( "\n" );
-			textToWrite += "\n\n"
+		for ( var key in intersect ) {
+			if ( intersect.hasOwnProperty(key) ) {
+				combination = intersect[ key ].combination;
+				listName = this._getIntersectSetsName(combination);
+				textToWrite += listName + ":\n" + intersect[ key ].list.array().join( "\n" );
+				textToWrite += "\n\n";
+			}
 		}
 		
-		this._savefile( "All Lists",  textToWrite )
+		this._savefile( "All Lists",  textToWrite );
 
 	},
 /**
@@ -141,33 +92,23 @@ var VennPrototype = {
 	getNumberOfSets: function () {
 		return this._listSets.length;
 	},
-
 /**
-* Get the upper limit number of sets
-* @return {Integer} upper limit of sets
-*/
-	getMaxVennSets: function () {
-		return this._N;
-	},
-
-/**
-* Switch to Automatic Venn diagram Layout.
+* Switch to Automatic Or predefined Venn diagram Layout.
 * When there are more than 5 sets,
 * the automatic layout will generate Euler diagram instead.
+* When there are more than 6 sets, 
+* the predefined layout will generate Euler diagram instead of Venn diagram.
+* @param {String} selected layout
 */
-	switchToAutoMode: function () {
-		this.autoLayout = true;
-		this._updateGraph();
-	},
-
-/**
-* Switch to predefined Venn diagram Layout.
-* When there are more than 6 sets,
-* the predefined layout will generate Euler diagram instead.
-*/
-	switchToPredfinedMode: function () {
-		this.autoLayout = false;
-		this._updateGraph();
+	switchLayout: function ( layout ) {
+		if ( layout === "auto" ) {
+			this.autoLayout = true;
+			this._updateGraph();
+		}
+		else if ( layout === "predefined" ){
+			this.autoLayout = false;
+			this._updateGraph();
+		}
 	},
 
 /**
@@ -179,10 +120,8 @@ var VennPrototype = {
 * @param {String} name new name for the set
 */
 	updateListName: function ( index, name ){
-
 		if ( this._listSets[index] )
 			this._updateName( index, name );
-
 	},
 
 /**
@@ -201,22 +140,22 @@ var VennPrototype = {
 	getRequiredList: function( requireList ){
 		
 		if ( requireList instanceof Array ) {
-			if ( requireList.length != 0 && requireList.length <= 7 ) {
+			if ( requireList.length !== 0 && requireList.length <= 7 ) {
 
 				requireList.sort();
 				var requireKey = requireList[0];
 
-				for ( i = 1; i < requireList.length; i++ ){
+				for ( var i = 1; i < requireList.length; i++ ){
 					//generate 1in2in......
 					requireKey += "in" + requireList[i];
 				}
 
-				var intersectSets = this._getIntersectSets()
+				var intersectSets = this._getIntersectSets();
 
 				if ( intersectSets ){
 					if ( intersectSets[requireKey] ) {
 						this._updatelastRequireSet( requireKey );
-						var name = this._getIntersectSetsName( intersectSets[requireKey].combination )
+						var name = this._getIntersectSetsName( intersectSets[requireKey].combination );
 						return  { title: name, list: intersectSets[requireKey].list.array()};
 					}
 				}
@@ -240,17 +179,17 @@ var VennPrototype = {
 	getRequiredListByName: function( requireList ){
 
 		if ( requireList instanceof Array ) {
-			if ( requireList.length != 0 && requireList.length <= 7 ) {
+			if ( requireList.length !== 0 && requireList.length <= 7 ) {
 
 				var requirement = [];
 
-				for ( i = 0; i < requireList.length; i++ )
-					for ( j = 0; j < this._listSets.length; j++ )
+				for ( var i = 0; i < requireList.length; i++ )
+					for ( var j = 0; j < this._listSets.length; j++ )
 						if ( this._listSets[j].name == requireList[i] )
 							requirement.push( j );
 
 				if ( requirement.length > 0 )
-					return getRequiredList( requirement );
+					return this.getRequiredList( requirement );
 			}
 		}
 
@@ -268,11 +207,12 @@ var VennPrototype = {
 		var ans = [];
 		var intersectList = this._getIntersectSets();
 
-		for ( key in intersectList ) {
-			var combination = intersectList[key].combination;
-			var name = this._getIntersectSetsName( combination )
-
-			ans.push( { title: name, intersectList: intersectList[key].list.array() } )
+		for ( var key in intersectList ) {
+			if ( intersectList.hasOwnProperty(key) ){
+				var combination = intersectList[key].combination;
+				var name = this._getIntersectSetsName( combination );
+				ans.push( { title: name, intersectList: intersectList[key].list.array() } );
+			}
 		}
 
 		return ans;
@@ -293,7 +233,7 @@ var VennPrototype = {
 
 		if ( this._listSets[index] ) {
 			
-			if ( list.length == 1 && list[0] == ""  )
+			if ( list.length === 1 && list[0] === ""  )
 				this._listSets[index].list = new sets.Set();
 			else
 				this._listSets[index].list = new sets.Set( list );
@@ -301,27 +241,25 @@ var VennPrototype = {
 			if ( name )
 				this._updateName( index, name );
 
-			if ( list.length == 0 || (list.length == 1 && list[0] == "" ) ) {
-				if ( index + 1 == this._listSets.length ) {
+			if ( list.length === 0 || (list.length === 1 && list[0] === "" ) ) {
+				if ( index + 1 === this._listSets.length ) {
 
 					for ( var i = index; i >= 0; i-- ){
-						if ( this._listSets[i].list.size() == 0 || (this._listSets[i].list.size() == 1 && this._listSets[i].list.array()[0] == "" ) )
+						if ( this._listSets[i].list.size() === 0 || (this._listSets[i].list.size() === 1 && this._listSets[i].list.array()[0] === "" ) )
 							this._listSets.pop();
 						else
 							break;
 					}
-					var ans = this._generateAllIntersectSets( );
 					
-					this._updateIntersectSets( ans );
+					this._updateIntersectSets( this._generateAllIntersectSets() );
 					this._updateGraph();
 					return true;
 				}
 			}
 
 			//TODO: find a faster way to update existing list.
-			var ans = this._generateAllIntersectSets( );
 			
-			this._updateIntersectSets( ans );
+			this._updateIntersectSets( this._generateAllIntersectSets() );
 			this._updateText();
 
 			return true;
@@ -340,12 +278,12 @@ var VennPrototype = {
 		if ( this._listSets.length  == this._N )
 			return;
 
-		if ( list.length == 1 && list[0] == "" )
+		if ( list.length == 1 && list[0] === "" )
 			this._listSets.push( { name: name, list: new sets.Set() } );
 		else
 			this._listSets.push( { name: name, list: new sets.Set( list ) } );
 		
-		this._updateName( this._listSets.length - 1, name )
+		this._updateName( this._listSets.length - 1, name );
 		var ans = this._generateAllIntersectSets();
 		
 		this._updateIntersectSets( ans );
@@ -389,13 +327,15 @@ var VennPrototype = {
 		var ans = {};
 		var counter = 0;
 
-		for ( key in data ) {
-			if ( counter == this._N ) {
-				break;
+		for ( var  key in data ) {
+			if ( data.hasOwnProperty(key) ){
+				if ( counter == this._N ) {
+					break;
+				}
+				this._listSets[ counter ] = {  name: key , list: new sets.Set(data[key])};
+				this._updateName( counter, key );
+				counter++;
 			}
-			this._listSets[ counter ] = {  name: key , list: new sets.Set(data[key])};
-			this._updateName( counter, key );
-			counter++;
 		}
 
 		ans = this._generateAllIntersectSets( );
@@ -404,7 +344,7 @@ var VennPrototype = {
 		this._updateGraph();
 
 	}
-}
+};
 
 exports.BioJSVenn = function( target, lists, clickCallback ) {
 
@@ -435,7 +375,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		}
 
 		return ans;
-	}
+	};
 
 //call this when mouse click svg element event is triggered
 	var mouseClickCall = function ( id ) {
@@ -454,8 +394,8 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 				arr =	IntersectionSet[ id ].list.array() ;
 
 		if ( clickChartCallback && clickChartCallback instanceof Function )
-			clickChartCallback( { title: text, list: arr, combination: combination  } )
-	}
+			clickChartCallback( { title: text, list: arr, combination: combination  } );
+	};
 
 //call this when mouse over svg element event is triggered
 	var mouseOverCall = function ( target, id ){
@@ -480,20 +420,15 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 			var selectedSet = IntersectionSet[ id ].list;
 			var intersectSetSize = selectedSet.size();
 
-			if ( intersectSetSize != 0 ) {
-
-				for ( i = 0; i < combination.length; i++ ){
-					var targetSize = IntersectionSet[ combination[i].toString() ].list.size()
+			if ( intersectSetSize !== 0 ) {
+				var changeOpacity = unselectedShapeFillOpacity + (selectedShapeFillOpacity - unselectedShapeFillOpacity) * ratio;	
+				for ( var i = 0; i < combination.length; i++ ){
+					var targetSize = IntersectionSet[ combination[i].toString() ].list.size();
 
 					var ratio = intersectSetSize / targetSize;
 
 					d3.select( "#shape" + combination[i] ).transition()
-						.style( "fill-opacity",  function() {
-
-							var temp = (selectedShapeFillOpacity - unselectedShapeFillOpacity) * ratio;
-
-							return unselectedShapeFillOpacity + temp;
-						} )
+						.style( "fill-opacity",  changeOpacity);
 				}
 			}
 		}
@@ -504,19 +439,18 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		.style("top", (d3.event.pageY - 5) + "px")
 		.style("position", "absolute")
 		.style("opacity", 0.6 )
-		.style("z-index", 9)
+		.style("z-index", 9);
 
 		d3.select("#vennToolTipTitle")
-			.text( function (d) { 
-
+			.text( function () { 
 			return getNameByCombination( combination ) + ":";
 		});
 
 		d3.select( "#vennToolTipListSize" )
-			.text( " size = " + IntersectionSet[ id ].list.size() )
+			.text( " size = " + IntersectionSet[ id ].list.size() );
 
 		d3.select( "#vennToolTipList" )
-			.text( function (d) {
+			.text( function () {
 				var text = "";
 
 				if ( IntersectionSet[ id ] )
@@ -534,16 +468,16 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 	var getNameByCombination = function( combination ) {
 		var text =  nameList[ combination[0] - 1 ];
 
-		for ( i = 1; i < combination.length; i++ ){
+		for ( var i = 1; i < combination.length; i++ ){
 			
-			if ( text != "" )
+			if ( text !== "" )
 				text += " in " + nameList[ combination[i] - 1 ];
 			else
 				text += nameList[ combination[i] - 1 ];
 		}
 
 		return text;
-	}
+	};
 
 //call this when mouse out svg event is triggered
 	var mouseOutCall = function (target, id) {
@@ -566,9 +500,9 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 			var selectedSet = IntersectionSet[ id ].list;
 			var intersectSetSize = selectedSet.size();
 
-			if ( intersectSetSize != 0 ) {
+			if ( intersectSetSize !== 0 ) {
 
-				for ( i = 0; i < combination.length; i++ ){
+				for ( var i = 0; i < combination.length; i++ ){
 					d3.select( "#shape" + combination[i] ).transition()
 						.style( "fill-opacity", unselectedShapeFillOpacity )
 						.attr( "x", -1 );
@@ -581,25 +515,23 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 	};
 
 //callback function when the mouse move across the svg element.
-	var mouseMoveCall = function (traget) {
+	var mouseMoveCall = function () {
 		d3.select("#vennToolTip")
 			.style("left", (d3.event.pageX - 250) + "px")
-			.style("top", (d3.event.pageY - 5) + "px")	
+			.style("top", (d3.event.pageY - 5) + "px");	
 	};
 
 //draw the predefined layout.
 //@param {Array} jsonData JSON object array which contain all the predefined inforation.
 	var drawEllipse = function ( jsonData ){
 
-		if ( jsonData.length == 0 )
+		if ( jsonData.length === 0 )
 			return;
 
 		var targetTransform = jsonData.length - 1;
 
 		var transformGroup = svg.append("g")
-								.attr( "transform", "scale(" + transform[ targetTransform ].scale + ") "
-											+ "translate(" + transform[ targetTransform ].x + ", "
-											+ transform[ targetTransform ].y + ")" )
+								.attr( "transform", "scale(" + transform[ targetTransform ].scale + ") " + "translate(" + transform[ targetTransform ].x + ", " + transform[ targetTransform ].y + ")" );
 
 		addWhiteBackground( transformGroup );
 
@@ -610,12 +542,13 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 								.append("g");
 
 		//use for clipping later.
-		defs.append( "clipPath" )
-			.attr( "id", function (d) { return "clip" + d.id } )
-			.append( "ellipse" )
-			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
-			.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
-			.attr("rx", function (d) { return d.rx} ).attr("ry", function (d) { return d.ry } );
+		var clipPath = defs.append( "clipPath" )
+																	.attr( "id", function (d) { return "clip" + d.id; } );
+    
+		clipPath.append( "ellipse" )
+			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") "; })
+			.attr("cx", function (d) { return d.cx;} ).attr("cy", function (d) { return d.cy; } )
+			.attr("rx", function (d) { return d.rx;} ).attr("ry", function (d) { return d.ry; } );
 
 		// This part is used to create a fake Stroke for the clipping. However, this part is not longer used.
 		//defs.append( "clipPath" )
@@ -631,29 +564,29 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 									.append( "g" );
 
 		shapeGroup.append( "ellipse" )
-				.attr( "id", function (d) { return "shape" + d.id } )
-				.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
-				.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
-				.attr("rx", function (d) { return d.rx} ).attr("ry", function (d) { return d.ry } )
-				.style("fill", function(d) { return predefineColor[d.id] })
+				.attr( "id", function (d) { return "shape" + d.id; } )
+				.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") "; })
+				.attr("cx", function (d) { return d.cx;} ).attr("cy", function (d) { return d.cy; } )
+				.attr("rx", function (d) { return d.rx;} ).attr("ry", function (d) { return d.ry; } )
+				.style("fill", function(d) { return predefineColor[d.id]; })
 				.style("fill-opacity", unselectedShapeFillOpacity )
 				.style("stroke-opacity", unselectedStrokeFillOpacity )
 				.style("stroke", predefineStrokeColor )
 				.style("stroke-width", StrokeWidth )
 				.on("mouseover", function (d) { mouseOverCall(this, d.id); })
 				.on("mouseout", function (d)  { mouseOutCall(this, d.id); })
-				.on("mousemove", function (d) { mouseMoveCall(this); })
-				.on("click", function (d) { mouseClickCall( d.id ) } );
+				.on("mousemove", function () { mouseMoveCall(); })
+				.on("click", function (d) { mouseClickCall( d.id ); } );
 
 		shapeGroup.append( "text" )
-				.attr( "id", function (d) { return "text" + d.id } )
+				.attr( "id", function (d) { return "text" + d.id; } )
 				.text( function (d){
 					if ( !IntersectionSet[ d.id.toString() ] )
 						return 0;
 					else
-						return IntersectionSet[ d.id.toString() ].list.size() 
+						return IntersectionSet[ d.id.toString() ].list.size();
 				} )
-				.attr("x", function (d) { return d.textX } ).attr("y", function(d){ return d.textY });
+				.attr("x", function (d) { return d.textX; } ).attr("y", function(d){ return d.textY; });
 
 		//combinationList -> 	4
 		//					3 4,3
@@ -664,14 +597,14 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		drawClip( combinationList, transformGroup );
 
 		if ( jsonData.length > 1 )
-			putPredefinedTextLabel( jsonData.length, transformGroup )
+			putPredefinedTextLabel( jsonData.length, transformGroup );
 		    
 	};
 
 //similar to drawEllipse, this one is polygon version.
 	var drawPath = function ( jsonData ){
 
-		if ( jsonData.length == 0 )
+		if ( jsonData.length === 0 )
 			return;
 
 		//  How to seperate Polygon and intersect?
@@ -686,9 +619,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		var targetTransform = jsonData.length - 1;
 
 		var transformGroup = svg.append("g")
-								.attr( "transform", "scale(" + transform[ targetTransform ].scale + ") "
-											+ "translate(" + transform[ targetTransform ].x + ", "
-											+ transform[ targetTransform ].y + ")" )
+								.attr( "transform", "scale(" + transform[ targetTransform ].scale + ") " + "translate(" + transform[ targetTransform ].x + ", " + transform[ targetTransform ].y + ")" );
 
 		addWhiteBackground( transformGroup );
 
@@ -699,9 +630,9 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 								.append("g");
 
 		defs.append( "clipPath" )
-			.attr( "id", function (d) { return "clip" + d.id } )
+			.attr( "id", function (d) { return "clip" + d.id; } )
 			.append("path")
-			.attr( "d", function (d){ return d.d } )
+			.attr( "d", function (d){ return d.d; } );
 
 		var shapeGroup = transformGroup.selectAll("_")
 									.data(jsonData)
@@ -709,34 +640,33 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 									.append( "g" );
 
 
-		shapeGroup.attr( "id", function (d) { return "shape" + d.id } )
+		shapeGroup.attr( "id", function (d) { return "shape" + d.id; } )
 				.append("path")
-				.attr( "id", function (d){ return d.id } )
-				.attr( "d", function (d){ return d.d } )
+				.attr( "id", function (d){ return d.id; } )
+				.attr( "d", function (d){ return d.d; } )
 				.attr( "fill", function (d) { return predefineColor[d.id]; } )
-				.style("fill-opacity", function (d) { return unselectedShapeFillOpacity; } )
+				.style("fill-opacity", function () { return unselectedShapeFillOpacity; } )
 				.style("stroke-opacity", unselectedStrokeFillOpacity )
-				.style("stroke", function (d) { return predefineStrokeColor; } )
+				.style("stroke", function () { return predefineStrokeColor; } )
 				.style("stroke-width", StrokeWidth )
 				.on("mouseover", function (d) {  mouseOverCall(this, d.id); })
 				.on("mouseout", function (d) {  mouseOutCall(this, d.id); })
-				.on("mousemove", function (d) { mouseMoveCall(this); })
-				.on("click", function (d) { mouseClickCall( d.id ) } );
+				.on("mousemove", function () { mouseMoveCall(); })
+				.on("click", function (d) { mouseClickCall( d.id ); } );
 
 		shapeGroup.append( "text" )
-			.attr( "id", function (d){ return "text" + d.id } )
+			.attr( "id", function (d){ return "text" + d.id; } )
 			.text( function (d){
 				if ( !IntersectionSet[ d.id.toString() ] )
 					return 0;
 				else
-					return IntersectionSet[ d.id.toString() ].list.size() } )
-			.attr("x", function (d) { return d.textX } ).attr("y", function(d){ return d.textY });
+					return IntersectionSet[ d.id.toString() ].list.size(); } )
+			.attr("x", function (d) { return d.textX; } ).attr("y", function(d){ return d.textY; });
 
 		drawClip( combinationList, transformGroup );
 
 		if ( jsonData.length > 1 )
-			putPredefinedTextLabel( jsonData.length, transformGroup )
-
+			putPredefinedTextLabel( jsonData.length, transformGroup );
 	};
 
 //Put predefined text label on the graph.
@@ -749,14 +679,14 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 				.enter()
 				.append( "g" )
 				.append( "text" )
-				.attr( "id", function (d) { return "text" + d.id } )
-				.attr( "x", function (d) { return d.textX } ).attr("y", function(d){ return d.textY })
+				.attr( "id", function (d) { return "text" + d.id; } )
+				.attr( "x", function (d) { return d.textX; } ).attr("y", function(d){ return d.textY; })
 				.text( function (d){
 					if ( !IntersectionSet[ d.id.toString() ] )
 						return 0;
 					else
-						return IntersectionSet[ d.id.toString() ].list.size() } );
-	}
+						return IntersectionSet[ d.id.toString() ].list.size(); } );
+	};
 
 //automatically generated the Venn digram. The graph is
 //rotationally symmetrical arrangement devised by Branko Grünbaum.
@@ -767,7 +697,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 		var toRadian = function ( degree ) {
 			return degree * Math.PI / 180;
-		}
+		};
 
 		var rotateAngle = 360 / num;
 
@@ -786,27 +716,25 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		var graphData = [], textData = [], titleData = [];
 
 		for ( var i = 0; i < num; i++ ){
-			nextX += magnitudeA * Math.cos( toRadian(directionA + rotateAngle * i) )
-			nextY += magnitudeA * Math.sin( toRadian(directionA + rotateAngle * i) )
+			nextX += magnitudeA * Math.cos( toRadian(directionA + rotateAngle * i) );
+			nextY += magnitudeA * Math.sin( toRadian(directionA + rotateAngle * i) );
 			
 			var toBDirection = toRadian(directionB + rotateAngle * i);
 			graphData.push( { id: i + 1, rotate: startAngle + rotateAngle * i, rx: rx, ry: ry,
 							cx: nextX + magnitudeB * Math.cos( toBDirection ),
-							cy: nextY + magnitudeB * Math.sin( toBDirection ) } )
+							cy: nextY + magnitudeB * Math.sin( toBDirection ) } );
 			textData.push( { id: i + 1, 
 							x: nextX - ( magnitudeB + rx * 0.71 ) * Math.cos( toBDirection ),
-							y: nextY - ( magnitudeB + rx * 0.71 ) * Math.sin( toBDirection ) } )
+							y: nextY - ( magnitudeB + rx * 0.71 ) * Math.sin( toBDirection ) } );
 			titleData.push( { id: i + 1, 
 							x: nextX - ( magnitudeB + rx ) * Math.cos( toBDirection ),
-							y: nextY - ( magnitudeB + rx ) * Math.sin( toBDirection ) } )			
-			nextX += magnitudeB * Math.cos( toBDirection )
-			nextY += magnitudeB * Math.sin( toBDirection )
+							y: nextY - ( magnitudeB + rx ) * Math.sin( toBDirection ) } );
+			nextX += magnitudeB * Math.cos( toBDirection );
+			nextY += magnitudeB * Math.sin( toBDirection );
 		}
 
 		var transformGroup = svg.append("g")
-								.attr( "transform", "scale(" + transform[num - 1].scale + ") "
-										+ "translate(" + transform[num - 1].x + ", "
-										+ transform[num - 1].y + ")" )
+								.attr( "transform", "scale(" + transform[num - 1].scale + ") " + "translate(" + transform[num - 1].x + ", " + transform[num - 1].y + ")" );
 
 		addWhiteBackground( transformGroup );
 
@@ -817,11 +745,11 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 								.append("g");
 
 		defs.append( "clipPath" )
-			.attr( "id", function (d) { return "clip" + d.id } )
+			.attr( "id", function (d) { return "clip" + d.id; } )
 			.append( "ellipse" )
-			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
-			.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
-			.attr("rx", function (d) { return d.rx} ).attr("ry", function (d) { return d.ry } );
+			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") "; })
+			.attr("cx", function (d) { return d.cx;} ).attr("cy", function (d) { return d.cy; } )
+			.attr("rx", function (d) { return d.rx;} ).attr("ry", function (d) { return d.ry; } );
 
 
 		var shapeGroup = transformGroup.selectAll("_")
@@ -830,19 +758,19 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 									.append( "g" );
 
 		shapeGroup.append( "ellipse" )
-			.attr( "id", function (d) { return "shape" + d.id } )
-			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") " })
-			.attr("cx", function (d) { return d.cx} ).attr("cy", function (d) { return d.cy } )
-			.attr("rx", function (d) { return d.rx} ).attr("ry", function (d) { return d.ry } )
-			.style("fill", function (d) { return predefineColor[d.id] })
+			.attr( "id", function (d) { return "shape" + d.id; } )
+			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") "; })
+			.attr("cx", function (d) { return d.cx;} ).attr("cy", function (d) { return d.cy; } )
+			.attr("rx", function (d) { return d.rx;} ).attr("ry", function (d) { return d.ry; } )
+			.style("fill", function (d) { return predefineColor[d.id]; })
 			.style("fill-opacity", unselectedShapeFillOpacity )
 			.style("stroke-opacity", unselectedStrokeFillOpacity )
 			.style("stroke", predefineStrokeColor )
 			.style("stroke-width", StrokeWidth )
 			.on("mouseover", function (d) { mouseOverCall(this, d.id); })
 			.on("mouseout", function (d)  { mouseOutCall(this, d.id); })
-			.on("mousemove", function (d) { mouseMoveCall(this); })
-			.on("click", function (d) { mouseClickCall( d.id ) } );
+			.on("mousemove", function () { mouseMoveCall(); })
+			.on("click", function (d) { mouseClickCall( d.id ); } );
 
 		drawClip( combinationList, transformGroup );
 
@@ -853,14 +781,14 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 									.append( "g" );
 
 		textGroup.append( "text" )
-				.attr( "id", function (d) { return "text" + d.id } )
-				.attr( "x", function (d) { return d.x } ).attr( "y", function (d) { return d.y } )
+				.attr( "id", function (d) { return "text" + d.id; } )
+				.attr( "x", function (d) { return d.x; } ).attr( "y", function (d) { return d.y; } )
 				.text( function (d) {
 					if ( !IntersectionSet[ d.id.toString() ] )
 						return 0;
 					else
-						return IntersectionSet[ d.id.toString() ].list.size() 
-				} )
+						return IntersectionSet[ d.id.toString() ].list.size();
+				} );
 		
 		var titleGroup = transformGroup.selectAll("_")
 								.data(titleData)
@@ -868,19 +796,19 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 								.append( "g" );
 
 		titleGroup.append( "text" )
-				.attr( "id", function (d) { return "titleText" + d.id } )
-				.attr( "x", function (d) { return d.x } ).attr( "y", function (d) { return d.y } )
-				.style( "fill", function (d) { return predefineColor[ d.id ] } )
+				.attr( "id", function (d) { return "titleText" + d.id; } )
+				.attr( "x", function (d) { return d.x; } ).attr( "y", function (d) { return d.y; } )
+				.style( "fill", function (d) { return predefineColor[ d.id ]; } )
 				.text( function (d) {
 					return nameList[d.id - 1];
 				} );
 
 		/*text lable for the size of intersect of all lists.*/
 		if ( num >= 2 ) {
-			var allIntersectText = "1"
+			var allIntersectText = "1";
 			/*generate 1in2in......*/
 			for ( i = 2; i <= num; i++ )
-				allIntersectText += "in" + i
+				allIntersectText += "in" + i;
 			
 			transformGroup.append( "text" )
 				.attr( "id", "text" + allIntersectText )
@@ -890,9 +818,9 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 						return 0;
 					else
 						return IntersectionSet[ allIntersectText ].list.size();
-				} )
+				} );
 		}
-	}
+	};
 
 //create clipping, every draw garph function is depend of this for creating intersect area.
 	var drawClip = function ( combination, drawOn ) {
@@ -908,10 +836,13 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 						.attr( "id", clipID )
 						.attr( "width", w ).attr( "height", h )
 						.attr( "x", 0 ).attr( "y", 0 )
-		}
+						.on( "mouseover", function() { mouseOverCall( "#g" + this.id , this.id ); } ) 
+						.on("mouseout", function() { mouseOutCall("#g" + this.id, this.id); } )
+						.on("mousemove", function () { mouseMoveCall(); } )
+						.on("click", function () { mouseClickCall( this.id ); } );
+		};
 
 		for ( var i = 0; i < combination.length; i++ ) {
-
 			for ( var j = 0; j < combination[i].length; j++  ){
 				if ( combination[i][j].length == 1 )
 					continue;
@@ -923,14 +854,10 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 								.style( "fill-opacity", 0 );
 
 				//clip( "clipL", group, "L" + targetID ).style( "fill", "white" );
-				
-				clip( "clip", group, targetID, i, j ).on("mouseover", function () { mouseOverCall( "#g" + this.id , this.id ) } ) 
-								.on("mouseout", function () {  mouseOutCall("#g" + this.id, this.id); })
-								.on("mousemove", function () { mouseMoveCall(this); })
-								.on("click", function () { mouseClickCall( this.id ) } );
+				clip( "clip", group, targetID, i, j );
 			}
 		}
-	}
+	};
 
 //add the white backgroud for the svg
 //otherwise, the user may get a transparent background svg
@@ -940,14 +867,14 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 			.attr("width", w).attr("height", h)
 			.attr( "x", 0 ).attr( "y", 0 );
 
-	}
+	};
 
 //redraw the whole graph immediately
 	this._updateGraph = function () {
 
 		svg.select("*").remove();
 
-		if ( this._listSets.length == 0 )
+		if ( this._listSets.length === 0 )
 			return;
 
 		if ( this.autoLayout ){
@@ -979,7 +906,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 					result[ ( i +1 ).toString() + "in" + key] = ans[key].intersection( this._listSets[ i ].list );
 				
 			}
-			for (var attrname in result) { ans[attrname] = result[attrname]; }
+			for (var attrname in result) { if (result.hasOwnProperty(attrname)) ans[attrname] = result[attrname]; }
 		}
 
 		combinationList.length = 0;
@@ -993,13 +920,14 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 		IntersectionSet = {};
 
-		for ( key in ans.list ) {
-			IntersectionSet[ key ] = { list: ans.list[key], combination: [] }
+		for ( var key in ans.list ) {
+			if ( ans.list.hasOwnProperty(key) )
+				IntersectionSet[ key ] = { list: ans.list[key], combination: [] };
 		}
 
-		for ( i = 0; i < combinationList.length; i++ )
-			for ( j = 0; j < combinationList[i].length; j++ )
-				IntersectionSet[ combinationList[i][j].reverse().join("in") ]["combination"] = combinationList[i][j];
+		for ( var  i = 0; i < combinationList.length; i++ )
+			for ( var j = 0; j < combinationList[i].length; j++ )
+				IntersectionSet[ combinationList[i][j].reverse().join("in") ].combination = combinationList[i][j];
 	};
 
 //update a specific set name
@@ -1007,11 +935,11 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		this._listSets[i].name = name;
 		nameList[i] = name;
 
-		var text = d3.select( "#titleText" + (i + 1) )
+		var text = d3.select( "#titleText" + (i + 1) );
 
 		if ( text.node() )
 			text.text( name );
-	}
+	};
 
 //update text when the intersection set is changed
 	this._updateText = function () {
@@ -1019,35 +947,36 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		if ( !IntersectionSet )
 			return;
 
-		for ( key in IntersectionSet ){
-			var targetText = d3.select( "#text" + key );
-
-			if ( targetText[0][0] ){
-				targetText.text( IntersectionSet[ key ].list.size() )
+		for ( var key in IntersectionSet ){
+			if ( IntersectionSet.hasOwnProperty(key) ){
+				var targetText = d3.select( "#text" + key );
+				if ( targetText[0][0] ){
+					targetText.text( IntersectionSet[ key ].list.size() );
+				}
 			}
 		}
-	}
+	};
 
 	this._getIntersectSets = function(){
 		return IntersectionSet;
-	}
+	};
 
 	this._setclickChartCallback = function( x ){
 		if ( x && x instanceof Function )
 			clickChartCallback = x;
-	}
+	};
 
 	this._getIntersectSetsName = function ( combination ) {
 		return getNameByCombination(combination);
-	}
+	};
 
 	this._updatelastRequireSet = function( key ){
 		lastRequireSet = key;
-	}
+	};
 
 	this._getlastRequireSet = function () {
 		return lastRequireSet;
-	}
+	};
 
 //save the text into a file.
 //@param {String} fileName the name of the file which is going to be downloaded.
@@ -1059,9 +988,9 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		var downloadLink = document.createElement("a");
 		downloadLink.download = fileNameToSaveAs;
 		downloadLink.innerHTML = "Download File";
-		downloadLink.id = "use-to-download-text-file"
+		downloadLink.id = "use-to-download-text-file";
 
-		if (window.webkitURL != null)
+		if (window.webkitURL !== null)
 		{
 			// Chrome allows the link to be clicked
 			// without actually adding it to the DOM.
@@ -1072,13 +1001,90 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 			// Firefox requires the link to be added to the DOM
 			// before it can be clicked.
 			downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
-			downloadLink.onclick = destroyClickedElement;
+			downloadLink.onclick = function(event) { document.body.removeChild(event.target);};
 			downloadLink.style.display = "none";
 			document.body.appendChild(downloadLink);
 		}
 
 		downloadLink.click();
-	}
+	};
+/**
+* Save the Venn diagram into PNG.
+*/
+	this.saveAsPNG = function(){
+
+		var canvas = d3.select( "body" )
+						.append( "canvas" )
+						.attr( "width", w )
+						.attr( "height", h )
+						.style( "display", "none" );
+		//get the html from svg element
+		var html = svg.attr("version", 1.1)
+								.attr("xmlns", "http://www.w3.org/2000/svg")
+								.node().parentNode.innerHTML;
+
+		var context = canvas.node().getContext("2d");
+		var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
+
+		var image = new Image();
+		image.src = imgsrc;
+
+		var IntersectionSet = this._getIntersectSets();
+
+		image.onload = function () {
+			context.drawImage( image, 0, 0 );
+			var text, obj;
+			//try to add back text into the graph as changing from svg to canvas lose all <text> element.
+			var textPosition = [];
+			for ( var key in IntersectionSet ){
+				if ( IntersectionSet.hasOwnProperty(key) ){
+					text = d3.select( "#text" + key );
+					if ( text.node() )
+						textPosition.push( { x: text.attr( "x" ), y: text.attr( "y" ), text: IntersectionSet[key].list.size() } );
+				}
+			}
+
+			if ( textPosition.length > 0 ){
+				context.font = "15px Open San";
+				for ( i = 0; i < textPosition.length; i++ ){
+					obj = textPosition[i];
+					context.fillText(obj.text, obj.x, obj.y);
+				}
+			}
+
+			//add back the title
+			textPosition = [];
+			for ( var i = 1; i <= 7; i++ ) {
+				text = d3.select( "#titleText" + i );
+				if ( text.node() )
+					textPosition.push( { x: text.attr( "x" ), y: text.attr( "y" ), text: nameList[ i - 1 ] } );
+			}
+
+			if ( textPosition.length > 0 ){
+				context.font = "15px Open San";
+				for ( i = 0; i < textPosition.length; i++ ){
+					context.fillStyle = predefineColor[ i + 1 ];
+					obj = textPosition[i];
+					context.fillText(obj.text, obj.x, obj.y);
+				}
+			}
+
+			var canvasdata = canvas.node().toDataURL("image/png");
+
+			//var pngimg = '<img src="'+canvasdata+'">'; 
+
+			//append <a> element on the html
+			var a = document.createElement("a");
+			a.id = "for-download-png";
+			a.download = "Venn.png";
+			a.href = canvasdata;
+			a.click();
+
+			//remove the <a>
+			d3.select( "#for-download-png" ).remove();
+			canvas.remove();
+		};
+	};
 
 	var lastRequireSet = "";
 
@@ -1109,7 +1115,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 	//	combinationList = [ [3], [2], [3, 2], [1], [3, 1], [2, 1], [3, 2, 1] ]
 	
 	var combinationList = [];
-	var textPosition = [];
+	//var textPosition = [];
 
 	var predefineColor = [];
 	var predefineShape = [];
@@ -1117,18 +1123,20 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 	var predefineStrokeColor = "#259286";
 
-	var selectedStrokeFillOpacity = 1;
+	//var selectedStrokeFillOpacity = 1;
 	var unselectedStrokeFillOpacity = 0;
 
 	var StrokeWidth = 2;
-
+  
 	var selectedShapeFillOpacity = 0.8;
 	var unselectedShapeFillOpacity = 0.35;
 
 	//store all graph transform arguments: translate and scale
 	var transform = [];
 
-	for ( i = 0; i < this._N; i++ )
+  var i, j;
+  
+	for (  i = 0; i < this._N; i++ )
 		transform.push( { x: 0, y: 0, scale: 1 } );
 
 	//starting from this point is magic! Don't touch!
@@ -1149,8 +1157,8 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 							   { "id": 2, "cx": 370, "cy": 306, "rotate": 0, "textX": 365, "textY": 310 },
 							   { "id": 3, "cx": 300, "cy": 185, "rotate": 0, "textX": 290, "textY": 180 }];
 
-	for ( i = 1; i <= 3; i++ ) {
-		for ( j = 0; j < i; j++ ) {
+	for (   i = 1; i <= 3; i++ ) {
+		for (   j = 0; j < i; j++ ) {
 			predefineShape[i][j].rx = circleR;
 			predefineShape[i][j].ry = circleR;
 		}
@@ -1189,10 +1197,10 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 							{ "id": 6, "cx": 296, "cy": 298,"rotate": 77,  "textX": 330, "textY": 472 },
 							{ "id": 7, "cx": 256, "cy": 311,"rotate": 135, "textX": 132, "textY": 440 }];
 
-	for ( i = 4; i <= this._N; i++ ) {
+	for (  i = 4; i <= this._N; i++ ) {
 		//6 sets Venn diagram is a special case
 		if ( i != 6 ) {
-			for ( j = 0; j < i; j++ ){
+			for (  j = 0; j < i; j++ ){
 				predefineShape[i][j].rx = ellipseRX;
 				predefineShape[i][j].ry = ellipseRY;
 			}
@@ -1215,7 +1223,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 								{ "id": "1in2in4", "textX": 341, "textY": 328 },
 								{ "id": "1in3in4", "textX": 246, "textY": 329 },
 								{ "id": "2in3in4", "textX": 366, "textY": 208 },
-								{ "id": "1in2in3in4", "textX": 290, "textY": 278 } ]
+								{ "id": "1in2in3in4", "textX": 290, "textY": 278 } ];
 
 	predefineIntersectText[5] = [ { "id": "1in2in3in4in5", "textX": 236, "textY": 250 } ];
 	predefineIntersectText[6] = [ { "id": "1in2in3in4in5in6", "textX": 200.66335, "textY": 217.0728 } ];
@@ -1257,6 +1265,6 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
     if ( lists )
     	this.updateAllList( lists );
-}
+};
 
 exports.BioJSVenn.prototype = VennPrototype;
