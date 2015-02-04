@@ -170,12 +170,12 @@ for ( i = 1; i <= N; i++ ){
 
 d3.select( "#radio-inline-predefine" ).on( "change", function() { 
                 if ( this.checked ) 
-                  venn.switchToPredfinedMode(); 
+                  venn.switchLayout("predefined"); 
               } );
 
 d3.select( "#radio-inline-auto" ).on( "change", function () {
                 if ( this.checked )
-                  venn.switchToAutoMode();
+                  venn.switchLayout("auto"); 
               } );
 
 d3.select( "#save-svg-png" ).on( "click", function () { venn.saveAsPNG() } )
@@ -10034,7 +10034,7 @@ var VennPrototype = {
 
 		var key = this._getlastRequireSet();
 		if ( key === "" ) {
-			console.log('Save last queried Set if there is any. User can make query by clicking on the Venn digram or via provide function getRequiredList()');
+			console.log('No queried set. Save last queried Set if there is any. User can make query by clicking on the Venn digram or via provide function getRequiredList()');
 			return
 		}
 		var intersect = this._getIntersectSets();
