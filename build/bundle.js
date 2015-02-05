@@ -9996,27 +9996,17 @@ exports.StringSet = function(items) {
 
 exports.StringSet.prototype = StringSetPrototype;
 },{}],5:[function(require,module,exports){
-// Hello.
-//
-// This is JSHint, a tool that helps to detect errors and potential
-// problems in your JavaScript code.
-//
-// To start, simply enter some JavaScript anywhere on this page. Your
-// report will appear on the right side.
-//
-// Additionally, you can toggle specific options in the Configure
-// menu.
-
 /*global d3:false */
 /*global require:false */
 /*global exports:false */
+/*global console:false */
+/*global alert:false */
 
-require('d3');
+require("d3");
 
-var sets = require('simplesets');
+var sets = require("simplesets");
 
 var VennPrototype = {
-
 
 	autoLayout: true,
 /**
@@ -10024,6 +10014,7 @@ var VennPrototype = {
 * @return {Integer} upper limit of sets
 */
 	getMaxVennSets: function () {
+		"use strict";
 		return this._N;
 	},
 /**
@@ -10031,25 +10022,24 @@ var VennPrototype = {
  * by clicking on the Venn digram or via provide function getRequiredList()
  */
 	saveLastQueriedSets: function () {
-
+		"use strict";
 		var key = this._getlastRequireSet();
 		if ( key === "" ) {
-			console.log('No queried set. Save last queried Set if there is any. User can make query by clicking on the Venn digram or via provide function getRequiredList()');
-			return
+			console.log("No queried set. Save last queried Set if there is any. User can make query by clicking on the Venn digram or via provide function getRequiredList()");
+			return;
 		}
 		var intersect = this._getIntersectSets();
 		var combination = intersect[ key ].combination;
 		var listName = this._getIntersectSetsName(combination);
 		var textToWrite = listName + ":\n" + intersect[ key ].list.array().join( "\n" );
-		
 		this._savefile( listName,  textToWrite );
-
 	},
 
 /**
  * Save all set including all sets and their intersect combination.
  */
 	saveAllSets: function () {
+		"use strict";
 		var intersect = this._getIntersectSets();
 		var textToWrite = "";
 		var combination, listName;
@@ -10061,8 +10051,7 @@ var VennPrototype = {
 				textToWrite += listName + ":\n" + intersect[ key ].list.array().join( "\n" );
 				textToWrite += "\n\n";
 			}
-		}
-		
+		}	
 		this._savefile( "All Lists",  textToWrite );
 
 	},
@@ -10080,6 +10069,7 @@ var VennPrototype = {
  * @param {Function} callback click callback function
  */
 	setClickCallback: function ( callback ){
+		"use strict"; 
 		this._setclickChartCallback( callback );
 	},
 
@@ -10088,6 +10078,7 @@ var VennPrototype = {
 * @return {Integer} the number of sets in the Venn diagram
 */
 	getNumberOfSets: function () {
+		"use strict";
 		return this._listSets.length;
 	},
 /**
@@ -10099,6 +10090,7 @@ var VennPrototype = {
 * @param {String} selected layout
 */
 	switchLayout: function ( layout ) {
+		"use strict";
 		if ( layout === "auto" ) {
 			this.autoLayout = true;
 			this._updateGraph();
@@ -10118,8 +10110,10 @@ var VennPrototype = {
 * @param {String} name new name for the set
 */
 	updateListName: function ( index, name ){
-		if ( this._listSets[index] )
+		"use strict";
+		if ( this._listSets[index] ) {
 			this._updateName( index, name );
+		}
 	},
 
 /**
@@ -10136,7 +10130,7 @@ var VennPrototype = {
 * @return {Object} return object contain two elements, "title" name of the required set,and "list" elements of the set. 
 */
 	getRequiredList: function( requireList ){
-		
+		"use strict";
 		if ( requireList instanceof Array ) {
 			if ( requireList.length !== 0 && requireList.length <= 7 ) {
 
@@ -10150,16 +10144,14 @@ var VennPrototype = {
 
 				var intersectSets = this._getIntersectSets();
 
-				if ( intersectSets ){
-					if ( intersectSets[requireKey] ) {
-						this._updatelastRequireSet( requireKey );
-						var name = this._getIntersectSetsName( intersectSets[requireKey].combination );
-						return  { title: name, list: intersectSets[requireKey].list.array()};
-					}
+				if ( intersectSets && intersectSets[requireKey] ){
+
+					this._updatelastRequireSet( requireKey );
+					var name = this._getIntersectSetsName( intersectSets[requireKey].combination );
+					return { title: name, list: intersectSets[requireKey].list.array()};
 				}
 			}
 		}
-
 	},
 
 /**
@@ -10175,19 +10167,23 @@ var VennPrototype = {
 * @return {Object} return object contain two elements, "title" name of the required set,and "list" elements of the set. 
 */
 	getRequiredListByName: function( requireList ){
-
+		"use strict";
 		if ( requireList instanceof Array ) {
 			if ( requireList.length !== 0 && requireList.length <= 7 ) {
 
 				var requirement = [];
 
-				for ( var i = 0; i < requireList.length; i++ )
-					for ( var j = 0; j < this._listSets.length; j++ )
-						if ( this._listSets[j].name == requireList[i] )
+				for ( var i = 0; i < requireList.length; i++ ) {
+					for ( var j = 0; j < this._listSets.length; j++ ) {
+						if ( this._listSets[j].name === requireList[i] ) {
 							requirement.push( j );
+						}
+					}
+				}
 
-				if ( requirement.length > 0 )
+				if ( requirement.length > 0 ) {
 					return this.getRequiredList( requirement );
+				}
 			}
 		}
 
@@ -10202,6 +10198,7 @@ var VennPrototype = {
 * @return {Array} array of objects which contain title (set name) and element
 */
 	getAllIntersectSets: function(){
+		"use strict";
 		var ans = [];
 		var intersectList = this._getIntersectSets();
 
@@ -10229,24 +10226,30 @@ var VennPrototype = {
 */
 	updateList: function ( index, name, list ){
 
+		"use strict";
 		if ( this._listSets[index] ) {
 			
-			if ( list.length === 1 && list[0] === ""  )
+			if ( list.length === 1 && list[0] === ""  ) {
 				this._listSets[index].list = new sets.Set();
-			else
+			}
+			else {
 				this._listSets[index].list = new sets.Set( list );
+			}
 
-			if ( name )
+			if ( name ) {
 				this._updateName( index, name );
+			}
 
 			if ( list.length === 0 || (list.length === 1 && list[0] === "" ) ) {
 				if ( index + 1 === this._listSets.length ) {
 
 					for ( var i = index; i >= 0; i-- ){
-						if ( this._listSets[i].list.size() === 0 || (this._listSets[i].list.size() === 1 && this._listSets[i].list.array()[0] === "" ) )
+						if ( this._listSets[i].list.size() === 0 || (this._listSets[i].list.size() === 1 && this._listSets[i].list.array()[0] === "" ) ){
 							this._listSets.pop();
-						else
+						}
+						else {
 							break;
+						}
 					}
 					
 					this._updateIntersectSets( this._generateAllIntersectSets() );
@@ -10273,13 +10276,17 @@ var VennPrototype = {
 * @param {Array} list list of element of the new set
 */
 	addList: function ( name, list ) {
-		if ( this._listSets.length  == this._N )
+		"use strict";
+		if ( this._listSets.length  === this._N ) {
 			return;
+		}
 
-		if ( list.length == 1 && list[0] === "" )
+		if ( list.length === 1 && list[0] === "" ){
 			this._listSets.push( { name: name, list: new sets.Set() } );
-		else
+		}
+		else{
 			this._listSets.push( { name: name, list: new sets.Set( list ) } );
+		}
 		
 		this._updateName( this._listSets.length - 1, name );
 		var ans = this._generateAllIntersectSets();
@@ -10298,7 +10305,7 @@ var VennPrototype = {
 * @param {String} input json text contain all the sets and corresponding name
 */
 	readJSON: function( text ) {
-		
+		"use strict";
 		try {
 			var data = JSON.parse(text);
 
@@ -10319,7 +10326,8 @@ var VennPrototype = {
 * @param {Object} data an input object contain all the sets and coreponding name
 */
 	updateAllList: function ( data ) {
-		
+		"use strict";
+
 		this._listSets = [];
 		
 		var ans = {};
@@ -10327,7 +10335,7 @@ var VennPrototype = {
 
 		for ( var  key in data ) {
 			if ( data.hasOwnProperty(key) ){
-				if ( counter == this._N ) {
+				if ( counter === this._N ) {
 					break;
 				}
 				this._listSets[ counter ] = {  name: key , list: new sets.Set(data[key])};
@@ -10346,8 +10354,11 @@ var VennPrototype = {
 
 exports.BioJSVenn = function( target, lists, clickCallback ) {
 
-	if ( !target )
+	"use strict";
+
+	if ( !target ){
 		return;
+	}
 //generate combination list. If the user want to generate all the combination from 1 to 4,
 //then assign start = 1, end = 4.
 //ans 			 -> 	[4]
@@ -10360,14 +10371,15 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 //@return {Array} an array contain all the combination.
 	var generateCombination = function ( start, end ){
 		var ans = [];
-
 		for ( var i = end; i >= start; i-- ){
 			var result = [];
 			result.push( [ i ] );
 
-			for ( var j = 0; j < ans.length; j++ )
-				for ( var k = 0; k < ans[j].length; k++ )
+			for ( var j = 0; j < ans.length; j++ ){
+				for ( var k = 0; k < ans[j].length; k++ ){
 					result.push( ans[j][k].concat( [i] ) );
+				}
+			}
 
 			ans.push( result );
 		}
@@ -10377,8 +10389,6 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 //call this when mouse click svg element event is triggered
 	var mouseClickCall = function ( id ) {
-
-
 		var combination = IntersectionSet[ id ].combination;
 		var text = "";
 		var arr = [];
@@ -10387,23 +10397,27 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 		lastRequireSet = id;
 
-		if ( IntersectionSet[ id ] )
-			if ( IntersectionSet[ id ].list.size() > 0 )
+		if ( IntersectionSet[ id ] ){
+			if ( IntersectionSet[ id ].list.size() > 0 ){
 				arr =	IntersectionSet[ id ].list.array() ;
+			}
+		}
 
-		if ( clickChartCallback && clickChartCallback instanceof Function )
+		if ( clickChartCallback && clickChartCallback instanceof Function ) {
 			clickChartCallback( { title: text, list: arr, combination: combination  } );
+		}
 	};
 
 //call this when mouse over svg element event is triggered
 	var mouseOverCall = function ( target, id ){
-
 		d3.select(target).transition()
 			.style( "fill-opacity",  function() {
-				if ( typeof id == 'string' || id instanceof String)
+				if ( typeof id === "string" || id instanceof String){
 					return 0.55;
-				else 
+				}
+				else {
 					return selectedShapeFillOpacity;
+				}
 				}
 			)
 			.style( "stroke-opacity", 0 );
@@ -10413,7 +10427,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		d3.select( "#text" + id ).transition()
 			.style( "fill", "white" );
 
-		if ( typeof id == 'string' || id instanceof String) {
+		if ( typeof id === "string" || id instanceof String) {
 
 			var selectedSet = IntersectionSet[ id ].list;
 			var intersectSetSize = selectedSet.size();
@@ -10451,8 +10465,9 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 			.text( function () {
 				var text = "";
 
-				if ( IntersectionSet[ id ] )
+				if ( IntersectionSet[ id ] ) {
 					text += IntersectionSet[ id ].list.array().join(" | ");
+				}
 				
 				return text;
 			} );
@@ -10464,14 +10479,17 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 //@param {Array} combination Array of set index
 //@return {String} nume of the required set
 	var getNameByCombination = function( combination ) {
+
 		var text =  nameList[ combination[0] - 1 ];
 
 		for ( var i = 1; i < combination.length; i++ ){
 			
-			if ( text !== "" )
+			if ( text !== "" ) {
 				text += " in " + nameList[ combination[i] - 1 ];
-			else
+			}
+			else {
 				text += nameList[ combination[i] - 1 ];
+			}
 		}
 
 		return text;
@@ -10481,10 +10499,12 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 	var mouseOutCall = function (target, id) {
 		d3.select(target).transition()
 			.style("fill-opacity", function () {
-				if ( typeof id == 'string' || id instanceof String)
+				if ( typeof id === "string" || id instanceof String){
 					return 0;
-		 		else 
+				}
+		 		else {
 		 			return unselectedShapeFillOpacity;
+		 		}
 		  	})
 		 	.style("stroke-opacity", unselectedStrokeFillOpacity );
        
@@ -10493,7 +10513,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		d3.select( "#text" + id ).transition()
 			.style( "fill", "black" );
 
-		if ( typeof id == 'string' || id instanceof String) {
+		if ( typeof id === "string" || id instanceof String) {
 
 			var selectedSet = IntersectionSet[ id ].list;
 			var intersectSetSize = selectedSet.size();
@@ -10522,9 +10542,10 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 //draw the predefined layout.
 //@param {Array} jsonData JSON object array which contain all the predefined inforation.
 	var drawEllipse = function ( jsonData ){
-
-		if ( jsonData.length === 0 )
+		
+		if ( jsonData.length === 0 ){
 			return;
+		}
 
 		var targetTransform = jsonData.length - 1;
 
@@ -10579,10 +10600,12 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		shapeGroup.append( "text" )
 				.attr( "id", function (d) { return "text" + d.id; } )
 				.text( function (d){
-					if ( !IntersectionSet[ d.id.toString() ] )
+					if ( !IntersectionSet[ d.id.toString() ] ){
 						return 0;
-					else
+					}
+					else{
 						return IntersectionSet[ d.id.toString() ].list.size();
+					}
 				} )
 				.attr("x", function (d) { return d.textX; } ).attr("y", function(d){ return d.textY; });
 
@@ -10594,16 +10617,18 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 		drawClip( combinationList, transformGroup );
 
-		if ( jsonData.length > 1 )
+		if ( jsonData.length > 1 ) {
 			putPredefinedTextLabel( jsonData.length, transformGroup );
+		}
 		    
 	};
 
 //similar to drawEllipse, this one is polygon version.
 	var drawPath = function ( jsonData ){
 
-		if ( jsonData.length === 0 )
+		if ( jsonData.length === 0 ) {
 			return;
+		}
 
 		//  How to seperate Polygon and intersect?
 		//	Take a look at the predefine JSON data at the very begining.
@@ -10655,16 +10680,21 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		shapeGroup.append( "text" )
 			.attr( "id", function (d){ return "text" + d.id; } )
 			.text( function (d){
-				if ( !IntersectionSet[ d.id.toString() ] )
+				if ( !IntersectionSet[ d.id.toString() ] ){
 					return 0;
-				else
-					return IntersectionSet[ d.id.toString() ].list.size(); } )
-			.attr("x", function (d) { return d.textX; } ).attr("y", function(d){ return d.textY; });
+				}
+				else {
+					return IntersectionSet[ d.id.toString() ].list.size(); 
+				}
+			 })
+			.attr("x", function (d) { return d.textX; } )
+			.attr("y", function (d) { return d.textY; } );
 
 		drawClip( combinationList, transformGroup );
 
-		if ( jsonData.length > 1 )
+		if ( jsonData.length > 1 ){
 			putPredefinedTextLabel( jsonData.length, transformGroup );
+		}
 	};
 
 //Put predefined text label on the graph.
@@ -10672,6 +10702,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 //@param {Number} numberOfSets number of sets have be drawn
 //@param {Object} drawSVG on which svg object should put text label
 	var putPredefinedTextLabel = function( numberOfSets, drawSVG ){
+
 		drawSVG.selectAll("_")
 				.data( predefineIntersectText[numberOfSets] )
 				.enter()
@@ -10680,10 +10711,13 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 				.attr( "id", function (d) { return "text" + d.id; } )
 				.attr( "x", function (d) { return d.textX; } ).attr("y", function(d){ return d.textY; })
 				.text( function (d){
-					if ( !IntersectionSet[ d.id.toString() ] )
+					if ( !IntersectionSet[ d.id.toString() ] ){
 						return 0;
-					else
-						return IntersectionSet[ d.id.toString() ].list.size(); } );
+					}
+					else {
+						return IntersectionSet[ d.id.toString() ].list.size(); 
+					}
+				 });
 	};
 
 //automatically generated the Venn digram. The graph is
@@ -10782,10 +10816,12 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 				.attr( "id", function (d) { return "text" + d.id; } )
 				.attr( "x", function (d) { return d.x; } ).attr( "y", function (d) { return d.y; } )
 				.text( function (d) {
-					if ( !IntersectionSet[ d.id.toString() ] )
+					if ( !IntersectionSet[ d.id.toString() ] ){
 						return 0;
-					else
+					}
+					else{
 						return IntersectionSet[ d.id.toString() ].list.size();
+					}
 				} );
 		
 		var titleGroup = transformGroup.selectAll("_")
@@ -10805,17 +10841,20 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		if ( num >= 2 ) {
 			var allIntersectText = "1";
 			/*generate 1in2in......*/
-			for ( i = 2; i <= num; i++ )
+			for ( i = 2; i <= num; i++ ){
 				allIntersectText += "in" + i;
+			}
 			
 			transformGroup.append( "text" )
 				.attr( "id", "text" + allIntersectText )
 				.attr( "x", x ).attr( "y", y - magnitudeB )
 				.text( function () {
-					if ( !IntersectionSet[ allIntersectText ] )
+					if ( !IntersectionSet[ allIntersectText ] ){
 						return 0;
-					else
+					}
+					else{
 						return IntersectionSet[ allIntersectText ].list.size();
+					}
 				} );
 		}
 	};
@@ -10842,8 +10881,9 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 		for ( var i = 0; i < combination.length; i++ ) {
 			for ( var j = 0; j < combination[i].length; j++  ){
-				if ( combination[i][j].length == 1 )
+				if ( combination[i][j].length === 1 ){
 					continue;
+				}
 
 				var targetID = combination[i][j].join("in");
 
@@ -10872,39 +10912,47 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 		svg.select("*").remove();
 
-		if ( this._listSets.length === 0 )
+		if ( this._listSets.length === 0 ){
 			return;
+		}
 
 		if ( this.autoLayout ){
 			drawVenn( this._listSets.length );
 		}
 		else{
-			if ( this._listSets.length != 6 ) 
+			if ( this._listSets.length !== 6 ){ 
 				drawEllipse( predefineShape[ this._listSets.length ] );
-			else
+			}
+			else{
 				drawPath( predefineShape[ this._listSets.length ] );
+			}
 		}
 	};
 
 //comput all intersection set base on the sets provided by user
 //@return {object} all intersection set
 	this._generateAllIntersectSets = function ( ){
-
 		var ans = {};
 
 		for ( var i = this._listSets.length - 1; i >= 0; i-- ) {
 			var result = {};
 
-			if ( this._listSets[i] )
+			if ( this._listSets[i] ){
 				result[ (i + 1).toString() ] = this._listSets[i].list;
+			}
 			
 
 			for ( var key in ans ){
-				if ( this._listSets[ i ] ) 
+				if ( this._listSets[ i ] ) {
 					result[ ( i +1 ).toString() + "in" + key] = ans[key].intersection( this._listSets[ i ].list );
+				}
 				
 			}
-			for (var attrname in result) { if (result.hasOwnProperty(attrname)) ans[attrname] = result[attrname]; }
+			for (var attrname in result) { 
+				if (result.hasOwnProperty(attrname)) { 
+					ans[attrname] = result[attrname];
+				} 
+			}
 		}
 
 		combinationList.length = 0;
@@ -10919,31 +10967,37 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		IntersectionSet = {};
 
 		for ( var key in ans.list ) {
-			if ( ans.list.hasOwnProperty(key) )
+			if ( ans.list.hasOwnProperty(key) ) {
 				IntersectionSet[ key ] = { list: ans.list[key], combination: [] };
+			}
 		}
 
-		for ( var  i = 0; i < combinationList.length; i++ )
-			for ( var j = 0; j < combinationList[i].length; j++ )
+		for ( var  i = 0; i < combinationList.length; i++ ) {
+			for ( var j = 0; j < combinationList[i].length; j++ ) {
 				IntersectionSet[ combinationList[i][j].reverse().join("in") ].combination = combinationList[i][j];
+			}
+		}
 	};
 
 //update a specific set name
 	this._updateName = function ( i, name ){
+
 		this._listSets[i].name = name;
 		nameList[i] = name;
 
 		var text = d3.select( "#titleText" + (i + 1) );
 
-		if ( text.node() )
+		if ( text.node() ) {
 			text.text( name );
+		}
 	};
 
 //update text when the intersection set is changed
 	this._updateText = function () {
-		
-		if ( !IntersectionSet )
+
+		if ( !IntersectionSet ) {
 			return;
+		}
 
 		for ( var key in IntersectionSet ){
 			if ( IntersectionSet.hasOwnProperty(key) ){
@@ -10960,8 +11014,9 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 	};
 
 	this._setclickChartCallback = function( x ){
-		if ( x && x instanceof Function )
+		if ( x && x instanceof Function ) {
 			clickChartCallback = x;
+		}
 	};
 
 	this._getIntersectSetsName = function ( combination ) {
@@ -10980,7 +11035,8 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 //@param {String} fileName the name of the file which is going to be downloaded.
 //@param {String} textToWrite the content of the file 
 	this._savefile = function ( fileName ,textToWrite ) {
-		var textFileAsBlob = new Blob([textToWrite], {type:'text/plain'});
+
+		var textFileAsBlob = new Blob([textToWrite], {type:"text/plain"});
 		var fileNameToSaveAs = fileName;
 
 		var downloadLink = document.createElement("a");
@@ -11010,7 +11066,6 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 * Save the Venn diagram into PNG.
 */
 	this.saveAsPNG = function(){
-
 		var canvas = d3.select( "body" )
 						.append( "canvas" )
 						.attr( "width", w )
@@ -11022,7 +11077,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 								.node().parentNode.innerHTML;
 
 		var context = canvas.node().getContext("2d");
-		var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
+		var imgsrc = "data:image/svg+xml;base64,"+ btoa(html);
 
 		var image = new Image();
 		image.src = imgsrc;
@@ -11037,8 +11092,9 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 			for ( var key in IntersectionSet ){
 				if ( IntersectionSet.hasOwnProperty(key) ){
 					text = d3.select( "#text" + key );
-					if ( text.node() )
+					if ( text.node() ) {
 						textPosition.push( { x: text.attr( "x" ), y: text.attr( "y" ), text: IntersectionSet[key].list.size() } );
+					}
 				}
 			}
 
@@ -11054,8 +11110,9 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 			textPosition = [];
 			for ( var i = 1; i <= 7; i++ ) {
 				text = d3.select( "#titleText" + i );
-				if ( text.node() )
+				if ( text.node() ) {
 					textPosition.push( { x: text.attr( "x" ), y: text.attr( "y" ), text: nameList[ i - 1 ] } );
+				}
 			}
 
 			if ( textPosition.length > 0 ){
@@ -11134,8 +11191,9 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
   var i, j;
   
-	for (  i = 0; i < this._N; i++ )
+	for (  i = 0; i < this._N; i++ ) {
 		transform.push( { x: 0, y: 0, scale: 1 } );
+	}
 
 	//starting from this point is magic! Don't touch!
 	//This maigc is used for predefined ellipsis and polygons.
@@ -11197,7 +11255,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 	for (  i = 4; i <= this._N; i++ ) {
 		//6 sets Venn diagram is a special case
-		if ( i != 6 ) {
+		if ( i !== 6 ) {
 			for (  j = 0; j < i; j++ ){
 				predefineShape[i][j].rx = ellipseRX;
 				predefineShape[i][j].ry = ellipseRY;
@@ -11258,11 +11316,13 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 	tooltip.append( "div" )
 		.attr("id", "vennToolTipList").style( "color", "white" );
     
-    if ( clickCallback )
+    if ( clickCallback ){
     	clickChartCallback = clickCallback;
+    }
 
-    if ( lists )
+    if ( lists ){
     	this.updateAllList( lists );
+    }
 };
 
 exports.BioJSVenn.prototype = VennPrototype;
