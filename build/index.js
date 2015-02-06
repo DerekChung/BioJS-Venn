@@ -1,27 +1,30 @@
+/*global d3:false */
+/*global require:false */
+/*global alert:false */
 
 require( "d3" );
 
 var biojsVenn = require( "../src/BioJSVenn" );
 
 var clickCallback = function ( obj ) {
-
+  "use strict";
+  var i;
   var text = obj.title + ":\n";
   
   text += obj.list.join("\n");
 
   d3.select( "#intersectSetList" ).node().value = text;
 
-  for ( i = 1; i <= N; i++ )
+  for ( i = 1; i <= N; i++ ) {
     d3.select( "#inlineCheckbox" + i ).property( "checked", false );
-
-  for ( i = 0; i < obj.combination.length; i++ ) {
-
-    d3.select( "#inlineCheckbox" + obj.combination[i] ).property( "checked", true );
   }
 
-}
+  for ( i = 0; i < obj.combination.length; i++ ) {
+    d3.select( "#inlineCheckbox" + obj.combination[i] ).property( "checked", true );
+  }
+};
 
-venn = new biojsVenn.BioJSVenn( "first" );
+var venn = new biojsVenn.BioJSVenn( "first" );
 
 venn.setClickCallback( clickCallback );
 
@@ -29,6 +32,7 @@ var N = venn.getMaxVennSets();
 
 //read in file
 d3.select("#files").on("change" ,function() {
+  "use strict";
   var files = this.files;
   if (!files.length) { return; }
 
@@ -36,7 +40,7 @@ d3.select("#files").on("change" ,function() {
   var reader = new FileReader();
 
   reader.onloadend = function(evt) {
-    if (evt.target.readyState == FileReader.DONE) { // DONE == 2
+    if (evt.target.readyState === FileReader.DONE) { // DONE == 2
       try{
         var data = evt.target.result;
         venn.readJSON( data );
@@ -44,17 +48,20 @@ d3.select("#files").on("change" ,function() {
         data = JSON.parse(evt.target.result);
         
         var counter = 0;
-        for ( key in data ) {
-          var text = data[key].join("\n");
-          d3.select( "#s" + ++counter).node().value = text;
-          d3.select( "#title" + counter ).node().value = key;
-          d3.select( "#inlineCheckboxLabel" + counter ).text( key );
-          d3.select( "#inlineCheckbox" + counter ).node().disabled = false;
+        for ( var key in data ) {
+          if ( data.hasOwnProperty(key) ) {
+            var text = data[key].join("\n");
+            counter++;
+            d3.select( "#s" + counter).node().value = text;
+            d3.select( "#title" + counter ).node().value = key;
+            d3.select( "#inlineCheckboxLabel" + counter ).text( key );
+            d3.select( "#inlineCheckbox" + counter ).node().disabled = false;
+          }
         }
 
         for ( var i = counter + 1; i <= N; i++ ){
-          d3.select("#s" + ++counter).node().value = "";
-          d3.select("#inlineCheckbox" + counter ).node().disabled = true;
+          d3.select("#s" + i).node().value = "";
+          d3.select("#inlineCheckbox" + i ).node().disabled = true;
         }
 
       } catch(e) {
@@ -68,28 +75,32 @@ d3.select("#files").on("change" ,function() {
 });
 
 d3.select("#load-simple-file").on("click" ,function() {
-  var data = require('../data/sample.json');
+  "use strict";
+  var data = require("../data/sample.json");
   venn.updateAllList( data );
 
   var counter = 0;
-  for ( key in data ) {
-    var text = data[key].join("\n");
-    d3.select( "#s" + ++counter).node().value = text;
-    d3.select( "#title" + counter ).node().value = key;
-    d3.select( "#inlineCheckboxLabel" + counter ).text( key );
-    d3.select( "#inlineCheckbox" + counter ).node().disabled = false;
+  for ( var key in data ) {
+    if ( data.hasOwnProperty(key) ){
+      counter++;
+      var text = data[key].join("\n");
+      d3.select( "#s" + counter).node().value = text;
+      d3.select( "#title" + counter ).node().value = key;
+      d3.select( "#inlineCheckboxLabel" + counter ).text( key );
+      d3.select( "#inlineCheckbox" + counter ).node().disabled = false;
+    }
   }
 
   for ( var i = counter + 1; i <= N; i++ ){
-    d3.select("#s" + ++counter).node().value = "";
-    d3.select("#inlineCheckbox" + counter ).node().disabled = true;
+    d3.select("#s" + i).node().value = "";
+    d3.select("#inlineCheckbox" + i ).node().disabled = true;
   }
 });
 
 
 //output the union list
 function checkboxUpdate() {
-
+  "use strict";
   var target = [];
   var start;
 
@@ -100,11 +111,13 @@ function checkboxUpdate() {
     }
   }
 
-  for ( var i = start + 1; i <= N; i++ ) 
-    if ( d3.select( "#inlineCheckbox" + i ).node().checked )
+  for ( var i = start + 1; i <= N; i++ ) {
+    if ( d3.select( "#inlineCheckbox" + i ).node().checked ) {
       target.push( i );
+    }
+  }
   
-  var intersectionSet = venn.getRequiredList( target );
+  var intersectionSet = venn.getRequiredList( target, false );
 
   if ( intersectionSet ) {
     var text = intersectionSet.title + ":\n";
@@ -112,11 +125,12 @@ function checkboxUpdate() {
 
     d3.select("#intersectSetList").node().value = text;
   }
-  else
+  else {
     d3.select("#intersectSetList").node().value = "";
+  }
 }
 
-for ( i = 1; i <= N; i++ ){
+for ( var i = 1; i <= N; i++ ){
   var changeCallback = checkboxUpdate;
   d3.select( "#inlineCheckbox" + i ).on( "change", checkboxUpdate );
 }
@@ -125,28 +139,33 @@ for ( i = 1; i <= N; i++ ){
 //once the value changed it calls fucntion update to update the list
 //---
 function listUpdate( index ) {
+  "use strict";
   return function() {
-
+    var i;
     if ( index > venn.getNumberOfSets() ) {
-      for ( var i = venn.getNumberOfSets() + 1; i < index; i++ )
+      for ( i = venn.getNumberOfSets() + 1; i < index; i++ ) {
         venn.addList( d3.select( "#title" + i ).node().value, [] );
+      }
 
       venn.addList( d3.select( "#title" + index ).node().value, this.value.split("\n") );
     }
-    else
+    else {
       venn.updateList( index - 1, d3.select( "#title" + index ).node().value, this.value.split("\n") );
+    }
 
-    for ( var i = 1; i <= N; i++ )
+    for ( i = 1; i <= N; i++ ) {
       d3.select( "#inlineCheckbox" + i ).node().disabled = false;
+    }
 
-    for ( var i = N; i >= 1; i-- ) {
+    for ( i = N; i >= 1; i-- ) {
 
-      if ( d3.select( "#s" + i ).node().value != "" )
+      if ( d3.select( "#s" + i ).node().value !== "" ){
         return;
+      }
       
       d3.select( "#inlineCheckbox" + i ).node().disabled = true;
     }
-  }
+  };
 }
 
 for ( i = 1; i <= N; i++ ){
@@ -155,11 +174,12 @@ for ( i = 1; i <= N; i++ ){
 }
 
 function titleUpdate( index ){
+  "use strict";
   return function() {
     venn.updateListName( index - 1, this.value );
 
     d3.select( "#inlineCheckboxLabel" + index ).text( this.value );
-  }
+  };
 }
 
 for ( i = 1; i <= N; i++ ){
@@ -167,18 +187,22 @@ for ( i = 1; i <= N; i++ ){
   d3.select( "#title" + i ).on( "change", titleUpdateCall );
 }
 
-d3.select( "#radio-inline-predefine" ).on( "change", function() { 
-                if ( this.checked ) 
-                  venn.switchLayout("predefined"); 
-              } );
+d3.select( "#radio-inline-predefine" ).on( "change", function() {
+                                          "use strict"; 
+                                          if ( this.checked ) {
+                                            venn.switchLayout("predefined"); 
+                                          }
+                                        } );
 
 d3.select( "#radio-inline-auto" ).on( "change", function () {
-                if ( this.checked )
+                "use strict";
+                if ( this.checked ){
                   venn.switchLayout("auto"); 
+                }
               } );
 
-d3.select( "#save-svg-png" ).on( "click", function () { venn.saveAsPNG() } )
+d3.select( "#save-svg-png" ).on( "click", function () { "use strict"; venn.saveAsPNG(); } );
 
-d3.select( "#save-require-list" ).on( "click", function () { venn.saveLastQueriedSets() } )
+d3.select( "#save-require-list" ).on( "click", function () { "use strict"; venn.saveLastQueriedSets(); } );
 
-d3.select( "#save-all-list" ).on( "click", function () { venn.saveAllSets() } )
+d3.select( "#save-all-list" ).on( "click", function () { "use strict"; venn.saveAllSets(); } );

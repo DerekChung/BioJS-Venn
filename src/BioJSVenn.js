@@ -123,25 +123,55 @@ var VennPrototype = {
 * input an Array = [ 1, 2, 3 ]. If user only want Set 2, then input an Array
 * only contain one element [ 2 ].
 * This function return an object { title, list }:
+* Get a specific set by name. If user want to get 
+* Set 1(name: "A"), Set 2(name: "B"), and Set 3(name: "C") interect,
+* input an Array = [ "A", "B", "C" ]. If user only want Set 2(name: B), then input an Array
+* only contain one element [ "B" ].
+* This function return an object { title, list }:
 * "title" is the name of the required set
 * "list" contains all the element of the required set.
 * Please remain that title is the name of the set.
 * If user require Set 1 and Set 2 intersect where Set 1 names "A" and Set 2 names "B",
 * then "title" is " A intersect B ".
 * @param {Array} requireList a list of required set index
+* @param {Boolean} 'true' if user want to use set names as input, otherwise 'false'
 * @return {Object} return object contain two elements, "title" name of the required set,and "list" elements of the set. 
 */
-	getRequiredList: function( requireList ){
+	getRequiredList: function( requireList, useName ){
 		"use strict";
-		if ( requireList instanceof Array ) {
-			if ( requireList.length !== 0 && requireList.length <= 7 ) {
+		var requirement = [], i;
 
-				requireList.sort();
-				var requireKey = requireList[0];
+		if ( useName ) {
+			if ( requireList instanceof Array ) {
+				if ( requireList.length !== 0 && requireList.length <= 7 ) {
 
-				for ( var i = 1; i < requireList.length; i++ ){
+					for ( i = 0; i < requireList.length; i++ ) {
+						for ( var j = 0; j < this._listSets.length; j++ ) {
+							if ( this._listSets[j].name === requireList[i] ) {
+								requirement.push( j );
+							}
+						}
+					}
+
+					if ( requirement.length === 0 ) {
+						return;
+					}
+				}
+			}
+		}
+		else {
+			requirement = requireList;
+		}
+
+		if ( requirement instanceof Array ) {
+			if ( requirement.length !== 0 && requirement.length <= 7 ) {
+
+				requirement.sort();
+				var requireKey = requirement[0];
+
+				for ( i = 1; i < requirement.length; i++ ){
 					//generate 1in2in......
-					requireKey += "in" + requireList[i];
+					requireKey += "in" + requirement[i];
 				}
 
 				var intersectSets = this._getIntersectSets();
@@ -157,47 +187,12 @@ var VennPrototype = {
 	},
 
 /**
-* Get a specific set by name. If user want to get 
-* Set 1(name: "A"), Set 2(name: "B"), and Set 3(name: "C") interect,
-* input an Array = [ "A", "B", "C" ]. If user only want Set 2(name: B), then input an Array
-* only contain one element [ "B" ].
-* This function return an object { title, list }:
-* "title" is the name of the required set
-* "list" contains all the element of the required set.
-* Please remain that title is the name of the set.
-* @param {Array} requireList a list of required set name
-* @return {Object} return object contain two elements, "title" name of the required set,and "list" elements of the set. 
-*/
-	getRequiredListByName: function( requireList ){
-		"use strict";
-		if ( requireList instanceof Array ) {
-			if ( requireList.length !== 0 && requireList.length <= 7 ) {
-
-				var requirement = [];
-
-				for ( var i = 0; i < requireList.length; i++ ) {
-					for ( var j = 0; j < this._listSets.length; j++ ) {
-						if ( this._listSets[j].name === requireList[i] ) {
-							requirement.push( j );
-						}
-					}
-				}
-
-				if ( requirement.length > 0 ) {
-					return this.getRequiredList( requirement );
-				}
-			}
-		}
-
-	},
-
-/**
 * Get all sets including their combinations.
 * This function return an array of object { title, list }:
 * "title" is the name of set.
 * "list" contains all the element of set.
 * Please remain that title is the name of the set.
-* @return {Array} array of objects which contain title (set name) and element
+* @return {Array} array of objects which contain two property, "title" (set name) and "intersectList"
 */
 	getAllIntersectSets: function(){
 		"use strict";
@@ -256,7 +251,7 @@ var VennPrototype = {
 					
 					this._updateIntersectSets( this._generateAllIntersectSets() );
 					this._updateGraph();
-					return true;
+					return;
 				}
 			}
 
@@ -265,10 +260,8 @@ var VennPrototype = {
 			this._updateIntersectSets( this._generateAllIntersectSets() );
 			this._updateText();
 
-			return true;
+			return;
 		}
-
-		return false;
 	},
 
 /**
@@ -354,6 +347,9 @@ var VennPrototype = {
 	}
 };
 
+/**
+
+*/
 exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 	"use strict";
@@ -564,7 +560,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 		//use for clipping later.
 		var clipPath = defs.append( "clipPath" )
-																	.attr( "id", function (d) { return "clip" + d.id; } );
+						.attr( "id", function (d) { return "clip" + d.id; } );
     
 		clipPath.append( "ellipse" )
 			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") "; })
@@ -637,7 +633,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		//	For interesct area, the id is String. (e.g. "1_2")
 		//
 		//Here is how to check is the data for intersect or for shape.
-		//if ( typeof jsonData[1].id == 'string' || jsonData.id instanceof String) {
+		//if ( typeof jsonData[1].id === 'string' || jsonData.id instanceof String) {
 		//
 		//}
 
@@ -1033,9 +1029,10 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		return lastRequireSet;
 	};
 
-//save the text into a file.
-//@param {String} fileName the name of the file which is going to be downloaded.
-//@param {String} textToWrite the content of the file 
+/**save the text into a file.
+*@param {String} fileName the name of the file which is going to be downloaded.
+*@param {String} textToWrite the content of the file
+*/
 	this._savefile = function ( fileName ,textToWrite ) {
 
 		var textFileAsBlob = new Blob([textToWrite], {type:"text/plain"});
@@ -1227,9 +1224,9 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 	var ellipseRX = 200, ellipseRY = 110;
 	//predefine ellipsis for 4 sets venn diagram
 	predefineShape[4] = [	{ "id": 1, "cx": 196, "cy": 246,"rotate": 45,  "textX": 70,  "textY": 135 },
-								{ "id": 2, "cx": 266, "cy": 176,"rotate": 45,  "textX": 138, "textY": 55 },
-								{ "id": 3, "cx": 326, "cy": 176,"rotate": 135, "textX": 435, "textY": 58 },
-								{ "id": 4, "cx": 396, "cy": 246,"rotate": 135, "textX": 508, "textY": 135 }];
+							{ "id": 2, "cx": 266, "cy": 176,"rotate": 45,  "textX": 138, "textY": 55 },
+							{ "id": 3, "cx": 326, "cy": 176,"rotate": 135, "textX": 435, "textY": 58 },
+							{ "id": 4, "cx": 396, "cy": 246,"rotate": 135, "textX": 508, "textY": 135 }];
 
 	//predefine ellipsis for 5 sets venn diagram
 	predefineShape[5] = [	{ "id": 1, "cx": 263, "cy": 213,"rotate": 90,  "textX": 258, "textY": 50  },
@@ -1247,7 +1244,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 							{ "id": 6, "textX": 135, "textY": 290, "d": "M  60.184 344.046 L 262.476 109.903 L 223.276 253.962 Z" }];
 
 	//predefine ellipsis for 7 sets venn diagram
-	predefineShape[7] = [	{ "id": 1, "cx": 220, "cy": 288,"rotate": 0,   "textX": 40,  "textY": 228 },
+	predefineShape[7] = [	{ "id": 1, "cx": 220, "cy": 288,"rotate": 0,   "textX": 40,  "textY": 268 },
 							{ "id": 2, "cx": 216, "cy": 246,"rotate": 51,  "textX": 96,  "textY": 117 },
 							{ "id": 3, "cx": 246, "cy": 217,"rotate": 102, "textX": 273, "textY": 49  },
 							{ "id": 4, "cx": 289, "cy": 222,"rotate": 154, "textX": 434, "textY": 152 },

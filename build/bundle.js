@@ -1,28 +1,31 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/*global d3:false */
+/*global require:false */
+/*global alert:false */
 
 require( "d3" );
 
 var biojsVenn = require( "../src/BioJSVenn" );
 
 var clickCallback = function ( obj ) {
-
+  "use strict";
+  var i;
   var text = obj.title + ":\n";
   
   text += obj.list.join("\n");
 
   d3.select( "#intersectSetList" ).node().value = text;
 
-  for ( i = 1; i <= N; i++ )
+  for ( i = 1; i <= N; i++ ) {
     d3.select( "#inlineCheckbox" + i ).property( "checked", false );
-
-  for ( i = 0; i < obj.combination.length; i++ ) {
-
-    d3.select( "#inlineCheckbox" + obj.combination[i] ).property( "checked", true );
   }
 
-}
+  for ( i = 0; i < obj.combination.length; i++ ) {
+    d3.select( "#inlineCheckbox" + obj.combination[i] ).property( "checked", true );
+  }
+};
 
-venn = new biojsVenn.BioJSVenn( "first" );
+var venn = new biojsVenn.BioJSVenn( "first" );
 
 venn.setClickCallback( clickCallback );
 
@@ -30,6 +33,7 @@ var N = venn.getMaxVennSets();
 
 //read in file
 d3.select("#files").on("change" ,function() {
+  "use strict";
   var files = this.files;
   if (!files.length) { return; }
 
@@ -37,7 +41,7 @@ d3.select("#files").on("change" ,function() {
   var reader = new FileReader();
 
   reader.onloadend = function(evt) {
-    if (evt.target.readyState == FileReader.DONE) { // DONE == 2
+    if (evt.target.readyState === FileReader.DONE) { // DONE == 2
       try{
         var data = evt.target.result;
         venn.readJSON( data );
@@ -45,17 +49,20 @@ d3.select("#files").on("change" ,function() {
         data = JSON.parse(evt.target.result);
         
         var counter = 0;
-        for ( key in data ) {
-          var text = data[key].join("\n");
-          d3.select( "#s" + ++counter).node().value = text;
-          d3.select( "#title" + counter ).node().value = key;
-          d3.select( "#inlineCheckboxLabel" + counter ).text( key );
-          d3.select( "#inlineCheckbox" + counter ).node().disabled = false;
+        for ( var key in data ) {
+          if ( data.hasOwnProperty(key) ) {
+            var text = data[key].join("\n");
+            counter++;
+            d3.select( "#s" + counter).node().value = text;
+            d3.select( "#title" + counter ).node().value = key;
+            d3.select( "#inlineCheckboxLabel" + counter ).text( key );
+            d3.select( "#inlineCheckbox" + counter ).node().disabled = false;
+          }
         }
 
         for ( var i = counter + 1; i <= N; i++ ){
-          d3.select("#s" + ++counter).node().value = "";
-          d3.select("#inlineCheckbox" + counter ).node().disabled = true;
+          d3.select("#s" + i).node().value = "";
+          d3.select("#inlineCheckbox" + i ).node().disabled = true;
         }
 
       } catch(e) {
@@ -69,28 +76,32 @@ d3.select("#files").on("change" ,function() {
 });
 
 d3.select("#load-simple-file").on("click" ,function() {
-  var data = require('../data/sample.json');
+  "use strict";
+  var data = require("../data/sample.json");
   venn.updateAllList( data );
 
   var counter = 0;
-  for ( key in data ) {
-    var text = data[key].join("\n");
-    d3.select( "#s" + ++counter).node().value = text;
-    d3.select( "#title" + counter ).node().value = key;
-    d3.select( "#inlineCheckboxLabel" + counter ).text( key );
-    d3.select( "#inlineCheckbox" + counter ).node().disabled = false;
+  for ( var key in data ) {
+    if ( data.hasOwnProperty(key) ){
+      counter++;
+      var text = data[key].join("\n");
+      d3.select( "#s" + counter).node().value = text;
+      d3.select( "#title" + counter ).node().value = key;
+      d3.select( "#inlineCheckboxLabel" + counter ).text( key );
+      d3.select( "#inlineCheckbox" + counter ).node().disabled = false;
+    }
   }
 
   for ( var i = counter + 1; i <= N; i++ ){
-    d3.select("#s" + ++counter).node().value = "";
-    d3.select("#inlineCheckbox" + counter ).node().disabled = true;
+    d3.select("#s" + i).node().value = "";
+    d3.select("#inlineCheckbox" + i ).node().disabled = true;
   }
 });
 
 
 //output the union list
 function checkboxUpdate() {
-
+  "use strict";
   var target = [];
   var start;
 
@@ -101,11 +112,13 @@ function checkboxUpdate() {
     }
   }
 
-  for ( var i = start + 1; i <= N; i++ ) 
-    if ( d3.select( "#inlineCheckbox" + i ).node().checked )
+  for ( var i = start + 1; i <= N; i++ ) {
+    if ( d3.select( "#inlineCheckbox" + i ).node().checked ) {
       target.push( i );
+    }
+  }
   
-  var intersectionSet = venn.getRequiredList( target );
+  var intersectionSet = venn.getRequiredList( target, false );
 
   if ( intersectionSet ) {
     var text = intersectionSet.title + ":\n";
@@ -113,11 +126,12 @@ function checkboxUpdate() {
 
     d3.select("#intersectSetList").node().value = text;
   }
-  else
+  else {
     d3.select("#intersectSetList").node().value = "";
+  }
 }
 
-for ( i = 1; i <= N; i++ ){
+for ( var i = 1; i <= N; i++ ){
   var changeCallback = checkboxUpdate;
   d3.select( "#inlineCheckbox" + i ).on( "change", checkboxUpdate );
 }
@@ -126,28 +140,33 @@ for ( i = 1; i <= N; i++ ){
 //once the value changed it calls fucntion update to update the list
 //---
 function listUpdate( index ) {
+  "use strict";
   return function() {
-
+    var i;
     if ( index > venn.getNumberOfSets() ) {
-      for ( var i = venn.getNumberOfSets() + 1; i < index; i++ )
+      for ( i = venn.getNumberOfSets() + 1; i < index; i++ ) {
         venn.addList( d3.select( "#title" + i ).node().value, [] );
+      }
 
       venn.addList( d3.select( "#title" + index ).node().value, this.value.split("\n") );
     }
-    else
+    else {
       venn.updateList( index - 1, d3.select( "#title" + index ).node().value, this.value.split("\n") );
+    }
 
-    for ( var i = 1; i <= N; i++ )
+    for ( i = 1; i <= N; i++ ) {
       d3.select( "#inlineCheckbox" + i ).node().disabled = false;
+    }
 
-    for ( var i = N; i >= 1; i-- ) {
+    for ( i = N; i >= 1; i-- ) {
 
-      if ( d3.select( "#s" + i ).node().value != "" )
+      if ( d3.select( "#s" + i ).node().value !== "" ){
         return;
+      }
       
       d3.select( "#inlineCheckbox" + i ).node().disabled = true;
     }
-  }
+  };
 }
 
 for ( i = 1; i <= N; i++ ){
@@ -156,11 +175,12 @@ for ( i = 1; i <= N; i++ ){
 }
 
 function titleUpdate( index ){
+  "use strict";
   return function() {
     venn.updateListName( index - 1, this.value );
 
     d3.select( "#inlineCheckboxLabel" + index ).text( this.value );
-  }
+  };
 }
 
 for ( i = 1; i <= N; i++ ){
@@ -168,21 +188,25 @@ for ( i = 1; i <= N; i++ ){
   d3.select( "#title" + i ).on( "change", titleUpdateCall );
 }
 
-d3.select( "#radio-inline-predefine" ).on( "change", function() { 
-                if ( this.checked ) 
-                  venn.switchLayout("predefined"); 
-              } );
+d3.select( "#radio-inline-predefine" ).on( "change", function() {
+                                          "use strict"; 
+                                          if ( this.checked ) {
+                                            venn.switchLayout("predefined"); 
+                                          }
+                                        } );
 
 d3.select( "#radio-inline-auto" ).on( "change", function () {
-                if ( this.checked )
+                "use strict";
+                if ( this.checked ){
                   venn.switchLayout("auto"); 
+                }
               } );
 
-d3.select( "#save-svg-png" ).on( "click", function () { venn.saveAsPNG() } )
+d3.select( "#save-svg-png" ).on( "click", function () { "use strict"; venn.saveAsPNG(); } );
 
-d3.select( "#save-require-list" ).on( "click", function () { venn.saveLastQueriedSets() } )
+d3.select( "#save-require-list" ).on( "click", function () { "use strict"; venn.saveLastQueriedSets(); } );
 
-d3.select( "#save-all-list" ).on( "click", function () { venn.saveAllSets() } )
+d3.select( "#save-all-list" ).on( "click", function () { "use strict"; venn.saveAllSets(); } );
 },{"../data/sample.json":2,"../src/BioJSVenn":5,"d3":3}],2:[function(require,module,exports){
 module.exports={
     "s1": ["G000001", "G000002", "G000003", "G000004", "G000005"],
@@ -10121,25 +10145,55 @@ var VennPrototype = {
 * input an Array = [ 1, 2, 3 ]. If user only want Set 2, then input an Array
 * only contain one element [ 2 ].
 * This function return an object { title, list }:
+* Get a specific set by name. If user want to get 
+* Set 1(name: "A"), Set 2(name: "B"), and Set 3(name: "C") interect,
+* input an Array = [ "A", "B", "C" ]. If user only want Set 2(name: B), then input an Array
+* only contain one element [ "B" ].
+* This function return an object { title, list }:
 * "title" is the name of the required set
 * "list" contains all the element of the required set.
 * Please remain that title is the name of the set.
 * If user require Set 1 and Set 2 intersect where Set 1 names "A" and Set 2 names "B",
 * then "title" is " A intersect B ".
 * @param {Array} requireList a list of required set index
+* @param {Boolean} 'true' if user want to use set names as input, otherwise 'false'
 * @return {Object} return object contain two elements, "title" name of the required set,and "list" elements of the set. 
 */
-	getRequiredList: function( requireList ){
+	getRequiredList: function( requireList, useName ){
 		"use strict";
-		if ( requireList instanceof Array ) {
-			if ( requireList.length !== 0 && requireList.length <= 7 ) {
+		var requirement = [], i;
 
-				requireList.sort();
-				var requireKey = requireList[0];
+		if ( useName ) {
+			if ( requireList instanceof Array ) {
+				if ( requireList.length !== 0 && requireList.length <= 7 ) {
 
-				for ( var i = 1; i < requireList.length; i++ ){
+					for ( i = 0; i < requireList.length; i++ ) {
+						for ( var j = 0; j < this._listSets.length; j++ ) {
+							if ( this._listSets[j].name === requireList[i] ) {
+								requirement.push( j );
+							}
+						}
+					}
+
+					if ( requirement.length === 0 ) {
+						return;
+					}
+				}
+			}
+		}
+		else {
+			requirement = requireList;
+		}
+
+		if ( requirement instanceof Array ) {
+			if ( requirement.length !== 0 && requirement.length <= 7 ) {
+
+				requirement.sort();
+				var requireKey = requirement[0];
+
+				for ( i = 1; i < requirement.length; i++ ){
 					//generate 1in2in......
-					requireKey += "in" + requireList[i];
+					requireKey += "in" + requirement[i];
 				}
 
 				var intersectSets = this._getIntersectSets();
@@ -10155,47 +10209,12 @@ var VennPrototype = {
 	},
 
 /**
-* Get a specific set by name. If user want to get 
-* Set 1(name: "A"), Set 2(name: "B"), and Set 3(name: "C") interect,
-* input an Array = [ "A", "B", "C" ]. If user only want Set 2(name: B), then input an Array
-* only contain one element [ "B" ].
-* This function return an object { title, list }:
-* "title" is the name of the required set
-* "list" contains all the element of the required set.
-* Please remain that title is the name of the set.
-* @param {Array} requireList a list of required set name
-* @return {Object} return object contain two elements, "title" name of the required set,and "list" elements of the set. 
-*/
-	getRequiredListByName: function( requireList ){
-		"use strict";
-		if ( requireList instanceof Array ) {
-			if ( requireList.length !== 0 && requireList.length <= 7 ) {
-
-				var requirement = [];
-
-				for ( var i = 0; i < requireList.length; i++ ) {
-					for ( var j = 0; j < this._listSets.length; j++ ) {
-						if ( this._listSets[j].name === requireList[i] ) {
-							requirement.push( j );
-						}
-					}
-				}
-
-				if ( requirement.length > 0 ) {
-					return this.getRequiredList( requirement );
-				}
-			}
-		}
-
-	},
-
-/**
 * Get all sets including their combinations.
 * This function return an array of object { title, list }:
 * "title" is the name of set.
 * "list" contains all the element of set.
 * Please remain that title is the name of the set.
-* @return {Array} array of objects which contain title (set name) and element
+* @return {Array} array of objects which contain two property, "title" (set name) and "intersectList"
 */
 	getAllIntersectSets: function(){
 		"use strict";
@@ -10254,7 +10273,7 @@ var VennPrototype = {
 					
 					this._updateIntersectSets( this._generateAllIntersectSets() );
 					this._updateGraph();
-					return true;
+					return;
 				}
 			}
 
@@ -10263,10 +10282,8 @@ var VennPrototype = {
 			this._updateIntersectSets( this._generateAllIntersectSets() );
 			this._updateText();
 
-			return true;
+			return;
 		}
-
-		return false;
 	},
 
 /**
@@ -10352,6 +10369,9 @@ var VennPrototype = {
 	}
 };
 
+/**
+
+*/
 exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 	"use strict";
@@ -10562,7 +10582,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
 		//use for clipping later.
 		var clipPath = defs.append( "clipPath" )
-																	.attr( "id", function (d) { return "clip" + d.id; } );
+						.attr( "id", function (d) { return "clip" + d.id; } );
     
 		clipPath.append( "ellipse" )
 			.attr("transform", function (d) { return "rotate(" + d.rotate + ", " + d.cx + ", " + d.cy + ") "; })
@@ -10635,7 +10655,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		//	For interesct area, the id is String. (e.g. "1_2")
 		//
 		//Here is how to check is the data for intersect or for shape.
-		//if ( typeof jsonData[1].id == 'string' || jsonData.id instanceof String) {
+		//if ( typeof jsonData[1].id === 'string' || jsonData.id instanceof String) {
 		//
 		//}
 
@@ -11031,9 +11051,10 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		return lastRequireSet;
 	};
 
-//save the text into a file.
-//@param {String} fileName the name of the file which is going to be downloaded.
-//@param {String} textToWrite the content of the file 
+/**save the text into a file.
+*@param {String} fileName the name of the file which is going to be downloaded.
+*@param {String} textToWrite the content of the file
+*/
 	this._savefile = function ( fileName ,textToWrite ) {
 
 		var textFileAsBlob = new Blob([textToWrite], {type:"text/plain"});
@@ -11225,9 +11246,9 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 	var ellipseRX = 200, ellipseRY = 110;
 	//predefine ellipsis for 4 sets venn diagram
 	predefineShape[4] = [	{ "id": 1, "cx": 196, "cy": 246,"rotate": 45,  "textX": 70,  "textY": 135 },
-								{ "id": 2, "cx": 266, "cy": 176,"rotate": 45,  "textX": 138, "textY": 55 },
-								{ "id": 3, "cx": 326, "cy": 176,"rotate": 135, "textX": 435, "textY": 58 },
-								{ "id": 4, "cx": 396, "cy": 246,"rotate": 135, "textX": 508, "textY": 135 }];
+							{ "id": 2, "cx": 266, "cy": 176,"rotate": 45,  "textX": 138, "textY": 55 },
+							{ "id": 3, "cx": 326, "cy": 176,"rotate": 135, "textX": 435, "textY": 58 },
+							{ "id": 4, "cx": 396, "cy": 246,"rotate": 135, "textX": 508, "textY": 135 }];
 
 	//predefine ellipsis for 5 sets venn diagram
 	predefineShape[5] = [	{ "id": 1, "cx": 263, "cy": 213,"rotate": 90,  "textX": 258, "textY": 50  },
@@ -11245,7 +11266,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 							{ "id": 6, "textX": 135, "textY": 290, "d": "M  60.184 344.046 L 262.476 109.903 L 223.276 253.962 Z" }];
 
 	//predefine ellipsis for 7 sets venn diagram
-	predefineShape[7] = [	{ "id": 1, "cx": 220, "cy": 288,"rotate": 0,   "textX": 40,  "textY": 228 },
+	predefineShape[7] = [	{ "id": 1, "cx": 220, "cy": 288,"rotate": 0,   "textX": 40,  "textY": 268 },
 							{ "id": 2, "cx": 216, "cy": 246,"rotate": 51,  "textX": 96,  "textY": 117 },
 							{ "id": 3, "cx": 246, "cy": 217,"rotate": 102, "textX": 273, "textY": 49  },
 							{ "id": 4, "cx": 289, "cy": 222,"rotate": 154, "textX": 434, "textY": 152 },
