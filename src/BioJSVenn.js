@@ -416,20 +416,26 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 				else {
 					return selectedShapeFillOpacity;
 				}
-				}
-			)
+			} )
 			.style( "stroke-opacity", 0 );
 
 		var combination = IntersectionSet[ id ].combination;
+		testFunction( combination );
 
 		d3.select( "#text" + id ).transition()
 			.style( "fill", "white" );
 
 		if ( typeof id === "string" || id instanceof String) {
 
+			for ( var i = 0; i < combination.length; i++ ) {
+				d3.select( "#shape" + combination[i] ).transition()
+					.style( "fill-opacity", selectedShapeFillOpacity );
+			}
+
+			/*
 			var selectedSet = IntersectionSet[ id ].list;
 			var intersectSetSize = selectedSet.size();
-
+			
 			if ( intersectSetSize !== 0 ) {
 				var changeOpacity = unselectedShapeFillOpacity + (selectedShapeFillOpacity - unselectedShapeFillOpacity) * ratio;	
 				for ( var i = 0; i < combination.length; i++ ){
@@ -441,6 +447,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 						.style( "fill-opacity",  changeOpacity);
 				}
 			}
+			*/
 		}
 
 		//Update the tooltip position and value
@@ -469,6 +476,34 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 				
 				return text;
 			} );
+	};
+
+	var testFunction = function( expection ) {
+		var skip = false;
+
+		for ( var i = 1; i <= 7; i++ ){
+			for ( var j = 0; j < expection.length; j++ ){
+				if ( expection[j] === i ) {
+					skip = true;
+					break;
+				}
+				else {
+					skip = false;
+				}
+			}
+
+			if ( skip ){
+				continue;
+			}
+
+			d3.select( "#shape" + i ).transition()
+				.style( "fill-opacity", 0.1 );
+			d3.select( "#text" + i ).transition()
+				.style( "fill-opacity", 0.1 );
+			d3.select( "#titleText" + i ).transition()
+				.style( "fill-opacity", 0.1 );
+
+		}
 	};
 
 //Get set nambe by a list of combination/
@@ -507,6 +542,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		 	.style("stroke-opacity", unselectedStrokeFillOpacity );
        
 		var combination = IntersectionSet[ id ].combination;
+		testFunction2( combination );
 
 		d3.select( "#text" + id ).transition()
 			.style( "fill", "black" );
@@ -528,6 +564,34 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 
        //Hide the tooltip
 		d3.select("#vennToolTip").transition().style("opacity", 0 ); 
+	};
+
+	var testFunction2 = function ( expection ) {
+		var skip = false;
+
+		for ( var i = 1; i <= 7; i++ ){
+			for ( var j = 0; j < expection.length; j++ ){
+				if ( expection[j] === i ) {
+					skip = true;
+					break;
+				}
+				else {
+					skip = false;
+				}
+			}
+
+			if ( skip ){
+				continue;
+			}
+
+			d3.select( "#shape" + i ).transition()
+				.style( "fill-opacity", unselectedShapeFillOpacity );
+			d3.select( "#text" + i ).transition()
+				.style( "fill-opacity", 1 );
+			d3.select( "#titleText" + i ).transition()
+				.style( "fill-opacity", 1 );
+
+		}
 	};
 
 //callback function when the mouse move across the svg element.
