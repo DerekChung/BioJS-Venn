@@ -1,2 +1,2 @@
-build/.jshintrc
-src/.jshintrc
+.jshintrc
+node_modules/

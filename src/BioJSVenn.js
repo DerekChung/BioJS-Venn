@@ -420,7 +420,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 			.style( "stroke-opacity", 0 );
 
 		var combination = IntersectionSet[ id ].combination;
-		testFunction( combination );
+		hideUnselectedShape( combination );
 
 		d3.select( "#text" + id ).transition()
 			.style( "fill", "white" );
@@ -432,6 +432,13 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 					.style( "fill-opacity", selectedShapeFillOpacity );
 			}
 
+			/*
+			svg.append("text")
+				.attr( "id", "intersectText" )
+				.text( IntersectionSet[ id ].list.size() )
+				.attr( "x", (d3.event.pageX) )
+				.attr( "y", (d3.event.pageY) );
+			*/
 			/*
 			var selectedSet = IntersectionSet[ id ].list;
 			var intersectSetSize = selectedSet.size();
@@ -478,7 +485,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 			} );
 	};
 
-	var testFunction = function( expection ) {
+	var hideUnselectedShape = function( expection ) {
 		var skip = false;
 
 		for ( var i = 1; i <= 7; i++ ){
@@ -542,7 +549,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		 	.style("stroke-opacity", unselectedStrokeFillOpacity );
        
 		var combination = IntersectionSet[ id ].combination;
-		testFunction2( combination );
+		recoverUnselectedShape( combination );
 
 		d3.select( "#text" + id ).transition()
 			.style( "fill", "black" );
@@ -553,7 +560,6 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 			var intersectSetSize = selectedSet.size();
 
 			if ( intersectSetSize !== 0 ) {
-
 				for ( var i = 0; i < combination.length; i++ ){
 					d3.select( "#shape" + combination[i] ).transition()
 						.style( "fill-opacity", unselectedShapeFillOpacity )
@@ -566,7 +572,7 @@ exports.BioJSVenn = function( target, lists, clickCallback ) {
 		d3.select("#vennToolTip").transition().style("opacity", 0 ); 
 	};
 
-	var testFunction2 = function ( expection ) {
+	var recoverUnselectedShape = function ( expection ) {
 		var skip = false;
 
 		for ( var i = 1; i <= 7; i++ ){
