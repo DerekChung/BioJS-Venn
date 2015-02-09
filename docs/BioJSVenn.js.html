@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width" charset="utf-8">
-    <title>BioJS-Venn</title>
+    <title>biojs-vis-venn</title>
     <link rel="stylesheet" href="http://getbootstrap.com/2.3.2/assets/css/bootstrap.css">
     <link rel="stylesheet" href="http://getbootstrap.com/2.3.2/assets/css/bootstrap-responsive.css">
     <link rel="stylesheet" href="http://getbootstrap.com/2.3.2/assets/css/docs.css">
@@ -63,7 +63,7 @@
     </div>
     <header id="overview" class="jumbotron subhead">
       <div class="container">
-        <h1>BioJS-Venn</h1>
+        <h1>biojs-vis-venn</h1>
         <p class="lead"></p>
       </div>
     </header>
@@ -92,8 +92,6 @@
               </li>
               <li><a href="#getRequiredList"><i class="alert alert-info"></i><span>getRequiredList</span></a>
               </li>
-              <li><a href="#getRequiredListByName"><i class="alert alert-info"></i><span>getRequiredListByName</span></a>
-              </li>
               <li><a href="#getAllIntersectSets"><i class="alert alert-info"></i><span>getAllIntersectSets</span></a>
               </li>
               <li><a href="#updateList"><i class="alert alert-info"></i><span>updateList</span></a>
@@ -104,6 +102,10 @@
               </li>
               <li><a href="#updateAllList"><i class="alert alert-info"></i><span>updateAllList</span></a>
               </li>
+              <li><a href="#BioJSVenn"><i class="alert alert-info"></i><span>BioJSVenn</span></a>
+              </li>
+              <li><a href="#_savefile"><i class="alert alert-info"></i><span>_savefile</span></a>
+              </li>
               <li><a href="#saveAsPNG"><i class="alert alert-info"></i><span>saveAsPNG</span></a>
               </li>
             </ul>
@@ -113,12 +115,13 @@
           <div class="description"><p>global d3:false</p> </div>
           <div class="description"><p>global require:false</p> </div>
           <div class="description"><p>global exports:false</p> </div>
-          <pre><code class="language-javascript">require('d3');
+          <div class="description"><p>global console:false</p> </div>
+          <div class="description"><p>global alert:false</p> </div>
+          <pre><code class="language-javascript">require(&quot;d3&quot;);
 
-var sets = require('simplesets');
+var sets = require(&quot;simplesets&quot;);
 
 var VennPrototype = {
-
 
 	autoLayout: true,</code></pre>
           <section id="getMaxVennSets">
@@ -130,6 +133,7 @@ var VennPrototype = {
           </section>
           <div class="description"><p>Get the upper limit number of sets</p> </div>
           <pre><code class="language-javascript">getMaxVennSets: function () {
+	&quot;use strict&quot;;
 	return this._N;
 },</code></pre>
           <section id="saveLastQueriedSets">
@@ -141,19 +145,17 @@ var VennPrototype = {
           </section>
           <div class="description"><p>Save last queried Set if there is any. User can make query<br />by clicking on the Venn digram or via provide function getRequiredList()</p> </div>
           <pre><code class="language-javascript">saveLastQueriedSets: function () {
-
+	&quot;use strict&quot;;
 	var key = this._getlastRequireSet();
 	if ( key === &quot;&quot; ) {
-		console.log('No queried set. Save last queried Set if there is any. User can make query by clicking on the Venn digram or via provide function getRequiredList()');
-		return
+		console.log(&quot;No queried set. Save last queried Set if there is any. User can make query by clicking on the Venn digram or via provide function getRequiredList()&quot;);
+		return;
 	}
 	var intersect = this._getIntersectSets();
 	var combination = intersect[ key ].combination;
 	var listName = this._getIntersectSetsName(combination);
 	var textToWrite = listName + &quot;:\n&quot; + intersect[ key ].list.array().join( &quot;\n&quot; );
-	
 	this._savefile( listName,  textToWrite );
-
 },</code></pre>
           <section id="saveAllSets">
             <h1>saveAllSets</h1>
@@ -164,6 +166,7 @@ var VennPrototype = {
           </section>
           <div class="description"><p>Save all set including all sets and their intersect combination.</p> </div>
           <pre><code class="language-javascript">saveAllSets: function () {
+	&quot;use strict&quot;;
 	var intersect = this._getIntersectSets();
 	var textToWrite = &quot;&quot;;
 	var combination, listName;
@@ -175,8 +178,7 @@ var VennPrototype = {
 			textToWrite += listName + &quot;:\n&quot; + intersect[ key ].list.array().join( &quot;\n&quot; );
 			textToWrite += &quot;\n\n&quot;;
 		}
-	}
-	
+	}	
 	this._savefile( &quot;All Lists&quot;,  textToWrite );
 
 },</code></pre>
@@ -205,6 +207,7 @@ var VennPrototype = {
           </table>
           <div class="description"><p>Custom click callback function for Venn diagram. In the other words,<br />define behavior after clicking on the Venn diagram. This function<br />will receive an object after clikcing on a specific set in the Venn diagram.<br />This is the structure of the object: { title, list, combination }.<br />&quot;title&quot; (String) is the name of the set, &quot;list&quot; (Array) contain all elements<br />of the set, &quot;combination&quot; (Array) is component index of the set.<br />For example, if user click on &quot;A intersect B&quot; area, where A is List 1 and B is List 2<br />Then title is &quot;A intersect B&quot;<br />&quot;list&quot; contain all elements of &quot;A intersect B&quot;<br />combination is an array contain two element: [ 1, 2 ]</p> </div>
           <pre><code class="language-javascript">setClickCallback: function ( callback ){
+	&quot;use strict&quot;; 
 	this._setclickChartCallback( callback );
 },</code></pre>
           <section id="getNumberOfSets">
@@ -216,6 +219,7 @@ var VennPrototype = {
           </section>
           <div class="description"><p>Number of sets in the Venn diagram right now</p> </div>
           <pre><code class="language-javascript">getNumberOfSets: function () {
+	&quot;use strict&quot;;
 	return this._listSets.length;
 },</code></pre>
           <section id="switchLayout">
@@ -243,6 +247,7 @@ var VennPrototype = {
           </table>
           <div class="description"><p>Switch to Automatic Or predefined Venn diagram Layout.<br />When there are more than 5 sets,<br />the automatic layout will generate Euler diagram instead.<br />When there are more than 6 sets,<br />the predefined layout will generate Euler diagram instead of Venn diagram.</p> </div>
           <pre><code class="language-javascript">switchLayout: function ( layout ) {
+	&quot;use strict&quot;;
 	if ( layout === &quot;auto&quot; ) {
 		this.autoLayout = true;
 		this._updateGraph();
@@ -282,8 +287,10 @@ var VennPrototype = {
           </table>
           <div class="description"><p>Update the title of specific set.<br />Remind that the index should start from 1 instead of 0<br />For example, if you want to set the first set name &quot;movies&quot;,<br />then you should index = 1, name = &quot;movies&quot;</p> </div>
           <pre><code class="language-javascript">updateListName: function ( index, name ){
-	if ( this._listSets[index] )
+	&quot;use strict&quot;;
+	if ( this._listSets[index] ) {
 		this._updateName( index, name );
+	}
 },</code></pre>
           <section id="getRequiredList">
             <h1>getRequiredList</h1>
@@ -306,76 +313,61 @@ var VennPrototype = {
                 <td>Array</td>
                 <td>&lt;p&gt;a list of required set index&lt;/p&gt;</td>
               </tr>
+              <tr>
+                <td>'true'</td>
+                <td>Boolean</td>
+                <td>&lt;p&gt;if user want to use set names as input, otherwise &amp;#39;false&amp;#39;&lt;/p&gt;</td>
+              </tr>
             </tbody>
           </table>
-          <div class="description"><p>Get a specific set. If user want to get Set 1, Set 2, and Set 3 interect,<br />input an Array = [ 1, 2, 3 ]. If user only want Set 2, then input an Array<br />only contain one element [ 2 ].<br />This function return an object { title, list }:<br />&quot;title&quot; is the name of the required set<br />&quot;list&quot; contains all the element of the required set.<br />Please remain that title is the name of the set.<br />If user require Set 1 and Set 2 intersect where Set 1 names &quot;A&quot; and Set 2 names &quot;B&quot;,<br />then &quot;title&quot; is &quot; A intersect B &quot;.</p> </div>
-          <pre><code class="language-javascript">getRequiredList: function( requireList ){
-	
-	if ( requireList instanceof Array ) {
-		if ( requireList.length !== 0 &amp;&amp; requireList.length &lt;= 7 ) {
+          <div class="description"><p>Get a specific set. If user want to get Set 1, Set 2, and Set 3 interect,<br />input an Array = [ 1, 2, 3 ]. If user only want Set 2, then input an Array<br />only contain one element [ 2 ].<br />This function return an object { title, list }:<br />Get a specific set by name. If user want to get<br />Set 1(name: &quot;A&quot;), Set 2(name: &quot;B&quot;), and Set 3(name: &quot;C&quot;) interect,<br />input an Array = [ &quot;A&quot;, &quot;B&quot;, &quot;C&quot; ]. If user only want Set 2(name: B), then input an Array<br />only contain one element [ &quot;B&quot; ].<br />This function return an object { title, list }:<br />&quot;title&quot; is the name of the required set<br />&quot;list&quot; contains all the element of the required set.<br />Please remain that title is the name of the set.<br />If user require Set 1 and Set 2 intersect where Set 1 names &quot;A&quot; and Set 2 names &quot;B&quot;,<br />then &quot;title&quot; is &quot; A intersect B &quot;.</p> </div>
+          <pre><code class="language-javascript">getRequiredList: function( requireList, useName ){
+	&quot;use strict&quot;;
+	var requirement = [], i;
 
-			requireList.sort();
-			var requireKey = requireList[0];
+	if ( useName ) {
+		if ( requireList instanceof Array ) {
+			if ( requireList.length !== 0 &amp;&amp; requireList.length &lt;= 7 ) {
 
-			for ( var i = 1; i &lt; requireList.length; i++ ){
-				//generate 1in2in......
-				requireKey += &quot;in&quot; + requireList[i];
-			}
+				for ( i = 0; i &lt; requireList.length; i++ ) {
+					for ( var j = 0; j &lt; this._listSets.length; j++ ) {
+						if ( this._listSets[j].name === requireList[i] ) {
+							requirement.push( j );
+						}
+					}
+				}
 
-			var intersectSets = this._getIntersectSets();
-
-			if ( intersectSets ){
-				if ( intersectSets[requireKey] ) {
-					this._updatelastRequireSet( requireKey );
-					var name = this._getIntersectSetsName( intersectSets[requireKey].combination );
-					return  { title: name, list: intersectSets[requireKey].list.array()};
+				if ( requirement.length === 0 ) {
+					return;
 				}
 			}
 		}
 	}
-
-},</code></pre>
-          <section id="getRequiredListByName">
-            <h1>getRequiredListByName</h1>
-            <h5 class="subheader"></h5>
-            <p>
-              <div class="label label-info radius ctx-type">method</div><span>getRequiredListByName()</span> -><span>Object</span>
-            </p>
-          </section>
-          <table class="table table-bordered table-striped">
-            <thead>
-              <tr>
-                <th style="width:20%">Option name</th>
-                <th style="width:20%">Type</th>
-                <th>Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>requireList</td>
-                <td>Array</td>
-                <td>&lt;p&gt;a list of required set name&lt;/p&gt;</td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="description"><p>Get a specific set by name. If user want to get<br />Set 1(name: &quot;A&quot;), Set 2(name: &quot;B&quot;), and Set 3(name: &quot;C&quot;) interect,<br />input an Array = [ &quot;A&quot;, &quot;B&quot;, &quot;C&quot; ]. If user only want Set 2(name: B), then input an Array<br />only contain one element [ &quot;B&quot; ].<br />This function return an object { title, list }:<br />&quot;title&quot; is the name of the required set<br />&quot;list&quot; contains all the element of the required set.<br />Please remain that title is the name of the set.</p> </div>
-          <pre><code class="language-javascript">getRequiredListByName: function( requireList ){
-
-	if ( requireList instanceof Array ) {
-		if ( requireList.length !== 0 &amp;&amp; requireList.length &lt;= 7 ) {
-
-			var requirement = [];
-
-			for ( var i = 0; i &lt; requireList.length; i++ )
-				for ( var j = 0; j &lt; this._listSets.length; j++ )
-					if ( this._listSets[j].name == requireList[i] )
-						requirement.push( j );
-
-			if ( requirement.length &gt; 0 )
-				return this.getRequiredList( requirement );
-		}
+	else {
+		requirement = requireList;
 	}
 
+	if ( requirement instanceof Array ) {
+		if ( requirement.length !== 0 &amp;&amp; requirement.length &lt;= 7 ) {
+
+			requirement.sort();
+			var requireKey = requirement[0];
+
+			for ( i = 1; i &lt; requirement.length; i++ ){
+				//generate 1in2in......
+				requireKey += &quot;in&quot; + requirement[i];
+			}
+
+			var intersectSets = this._getIntersectSets();
+
+			if ( intersectSets &amp;&amp; intersectSets[requireKey] ){
+
+				this._updatelastRequireSet( requireKey );
+				var name = this._getIntersectSetsName( intersectSets[requireKey].combination );
+				return { title: name, list: intersectSets[requireKey].list.array()};
+			}
+		}
+	}
 },</code></pre>
           <section id="getAllIntersectSets">
             <h1>getAllIntersectSets</h1>
@@ -386,6 +378,7 @@ var VennPrototype = {
           </section>
           <div class="description"><p>Get all sets including their combinations.<br />This function return an array of object { title, list }:<br />&quot;title&quot; is the name of set.<br />&quot;list&quot; contains all the element of set.<br />Please remain that title is the name of the set.</p> </div>
           <pre><code class="language-javascript">getAllIntersectSets: function(){
+	&quot;use strict&quot;;
 	var ans = [];
 	var intersectList = this._getIntersectSets();
 
@@ -435,29 +428,35 @@ var VennPrototype = {
           <div class="description"><p>Update the whole set.<br />This function provide an interface to update Set content.<br />If user want to update List 1 name to &quot;A&quot;, and element = [ &quot;Monday&quot;, &quot;Tuesday&quot; ],<br />then index = 1, name = &quot;A&quot;, list = [ &quot;Monday&quot;, &quot;Tuesday&quot; ].<br />If user only want to update the set content, then name = null.<br />Remind that parameter list will completely replace the exist content in the set.</p> </div>
           <pre><code class="language-javascript">updateList: function ( index, name, list ){
 
+	&quot;use strict&quot;;
 	if ( this._listSets[index] ) {
 		
-		if ( list.length === 1 &amp;&amp; list[0] === &quot;&quot;  )
+		if ( list.length === 1 &amp;&amp; list[0] === &quot;&quot;  ) {
 			this._listSets[index].list = new sets.Set();
-		else
+		}
+		else {
 			this._listSets[index].list = new sets.Set( list );
+		}
 
-		if ( name )
+		if ( name ) {
 			this._updateName( index, name );
+		}
 
 		if ( list.length === 0 || (list.length === 1 &amp;&amp; list[0] === &quot;&quot; ) ) {
 			if ( index + 1 === this._listSets.length ) {
 
 				for ( var i = index; i &gt;= 0; i-- ){
-					if ( this._listSets[i].list.size() === 0 || (this._listSets[i].list.size() === 1 &amp;&amp; this._listSets[i].list.array()[0] === &quot;&quot; ) )
+					if ( this._listSets[i].list.size() === 0 || (this._listSets[i].list.size() === 1 &amp;&amp; this._listSets[i].list.array()[0] === &quot;&quot; ) ){
 						this._listSets.pop();
-					else
+					}
+					else {
 						break;
+					}
 				}
 				
 				this._updateIntersectSets( this._generateAllIntersectSets() );
 				this._updateGraph();
-				return true;
+				return;
 			}
 		}
 
@@ -466,10 +465,8 @@ var VennPrototype = {
 		this._updateIntersectSets( this._generateAllIntersectSets() );
 		this._updateText();
 
-		return true;
+		return;
 	}
-
-	return false;
 },</code></pre>
           <section id="addList">
             <h1>addList</h1>
@@ -501,13 +498,17 @@ var VennPrototype = {
           </table>
           <div class="description"><p>add one more set to the Venn diagram if possible.<br />If the the Venn diagram is already full, then nothing happen.</p> </div>
           <pre><code class="language-javascript">addList: function ( name, list ) {
-	if ( this._listSets.length  == this._N )
+	&quot;use strict&quot;;
+	if ( this._listSets.length  === this._N ) {
 		return;
+	}
 
-	if ( list.length == 1 &amp;&amp; list[0] === &quot;&quot; )
+	if ( list.length === 1 &amp;&amp; list[0] === &quot;&quot; ){
 		this._listSets.push( { name: name, list: new sets.Set() } );
-	else
+	}
+	else{
 		this._listSets.push( { name: name, list: new sets.Set( list ) } );
+	}
 	
 	this._updateName( this._listSets.length - 1, name );
 	var ans = this._generateAllIntersectSets();
@@ -541,7 +542,7 @@ var VennPrototype = {
           </table>
           <div class="description"><p>parse and JSON to sets.<br />Here is the structure of input:<br />&quot;{ &quot;A&quot;: [ 1, 2, 3, 4 ],<br />  &quot;B&quot;: [ 2, 3, 4, 7 ] }&quot;<br />key will be the name of the set</p> </div>
           <pre><code class="language-javascript">readJSON: function( text ) {
-	
+	&quot;use strict&quot;;
 	try {
 		var data = JSON.parse(text);
 
@@ -576,7 +577,8 @@ var VennPrototype = {
           </table>
           <div class="description"><p>Replace all list with the given data<br />Here is the structure of input:<br />{ &quot;A&quot;: [ 1, 2, 3, 4 ],<br />  &quot;B&quot;: [ 2, 3, 4, 7 ] }<br />key will be the name of the set.<br />Compare to readJSON(), this function accept object.</p> </div>
           <pre><code class="language-javascript">updateAllList: function ( data ) {
-	
+	&quot;use strict&quot;;
+
 	this._listSets = [];
 	
 	var ans = {};
@@ -584,7 +586,7 @@ var VennPrototype = {
 
 	for ( var  key in data ) {
 		if ( data.hasOwnProperty(key) ){
-			if ( counter == this._N ) {
+			if ( counter === this._N ) {
 				break;
 			}
 			this._listSets[ counter ] = {  name: key , list: new sets.Set(data[key])};
@@ -599,12 +601,22 @@ var VennPrototype = {
 	this._updateGraph();
 
 }
-};
+};</code></pre>
+          <section id="BioJSVenn">
+            <h1>BioJSVenn</h1>
+            <h5 class="subheader"></h5>
+            <p>
+              <div class="label label-info radius ctx-type">method</div><span>exports.BioJSVenn()</span>
+            </p>
+          </section>
+          <div class="description"> </div>
+          <pre><code class="language-javascript">exports.BioJSVenn = function( target, lists, clickCallback ) {
 
-exports.BioJSVenn = function( target, lists, clickCallback ) {
+	&quot;use strict&quot;;
 
-if ( !target )
-	return;
+	if ( !target ){
+		return;
+	}
 //generate combination list. If the user want to generate all the combination from 1 to 4,
 //then assign start = 1, end = 4.
 //ans 			 -&gt; 	[4]
@@ -615,409 +627,284 @@ if ( !target )
 //@param {Number} start combination start from
 //@param {Number} end combination start at
 //@return {Array} an array contain all the combination.
-var generateCombination = function ( start, end ){
-	var ans = [];
+	var generateCombination = function ( start, end ){
+		var ans = [];
+		for ( var i = end; i &gt;= start; i-- ){
+			var result = [];
+			result.push( [ i ] );
 
-	for ( var i = end; i &gt;= start; i-- ){
-		var result = [];
-		result.push( [ i ] );
+			for ( var j = 0; j &lt; ans.length; j++ ){
+				for ( var k = 0; k &lt; ans[j].length; k++ ){
+					result.push( ans[j][k].concat( [i] ) );
+				}
+			}
 
-		for ( var j = 0; j &lt; ans.length; j++ )
-			for ( var k = 0; k &lt; ans[j].length; k++ )
-				result.push( ans[j][k].concat( [i] ) );
+			ans.push( result );
+		}
 
-		ans.push( result );
-	}
-
-	return ans;
-};
+		return ans;
+	};
 
 //call this when mouse click svg element event is triggered
-var mouseClickCall = function ( id ) {
+	var mouseClickCall = function ( id ) {
+		var combination = IntersectionSet[ id ].combination;
+		var text = &quot;&quot;;
+		var arr = [];
 
+		text = getNameByCombination( combination );
 
-	var combination = IntersectionSet[ id ].combination;
-	var text = &quot;&quot;;
-	var arr = [];
+		lastRequireSet = id;
 
-	text = getNameByCombination( combination );
+		if ( IntersectionSet[ id ] ){
+			if ( IntersectionSet[ id ].list.size() &gt; 0 ){
+				arr =	IntersectionSet[ id ].list.array() ;
+			}
+		}
 
-	lastRequireSet = id;
-
-	if ( IntersectionSet[ id ] )
-		if ( IntersectionSet[ id ].list.size() &gt; 0 )
-			arr =	IntersectionSet[ id ].list.array() ;
-
-	if ( clickChartCallback &amp;&amp; clickChartCallback instanceof Function )
-		clickChartCallback( { title: text, list: arr, combination: combination  } );
-};
+		if ( clickChartCallback &amp;&amp; clickChartCallback instanceof Function ) {
+			clickChartCallback( { title: text, list: arr, combination: combination  } );
+		}
+	};
 
 //call this when mouse over svg element event is triggered
-var mouseOverCall = function ( target, id ){
+	var mouseOverCall = function ( target, id ){
+		d3.select(target).transition()
+			.style( &quot;fill-opacity&quot;,  function() {
+				if ( typeof id === &quot;string&quot; || id instanceof String){
+					return 0.55;
+				}
+				else {
+					return selectedShapeFillOpacity;
+				}
+			} )
+			.style( &quot;stroke-opacity&quot;, 0 );
 
-	d3.select(target).transition()
-		.style( &quot;fill-opacity&quot;,  function() {
-			if ( typeof id == 'string' || id instanceof String)
-				return 0.55;
-			else 
-				return selectedShapeFillOpacity;
-			}
-		)
-		.style( &quot;stroke-opacity&quot;, 0 );
+		var combination = IntersectionSet[ id ].combination;
+		hideUnselectedShape( combination );
 
-	var combination = IntersectionSet[ id ].combination;
+		d3.select( &quot;#text&quot; + id ).transition()
+			.style( &quot;fill&quot;, &quot;white&quot; );
 
-	d3.select( &quot;#text&quot; + id ).transition()
-		.style( &quot;fill&quot;, &quot;white&quot; );
+		if ( typeof id === &quot;string&quot; || id instanceof String) {
 
-	if ( typeof id == 'string' || id instanceof String) {
-
-		var selectedSet = IntersectionSet[ id ].list;
-		var intersectSetSize = selectedSet.size();
-
-		if ( intersectSetSize !== 0 ) {
-			var changeOpacity = unselectedShapeFillOpacity + (selectedShapeFillOpacity - unselectedShapeFillOpacity) * ratio;	
-			for ( var i = 0; i &lt; combination.length; i++ ){
-				var targetSize = IntersectionSet[ combination[i].toString() ].list.size();
-
-				var ratio = intersectSetSize / targetSize;
-
+			for ( var i = 0; i &lt; combination.length; i++ ) {
 				d3.select( &quot;#shape&quot; + combination[i] ).transition()
-					.style( &quot;fill-opacity&quot;,  changeOpacity);
-			}
+					.style( &quot;fill-opacity&quot;, selectedShapeFillOpacity );
+			}</code></pre>
+          <div class="description"><p>svg.append(&quot;text&quot;)<br />                .attr( &quot;id&quot;, &quot;intersectText&quot; )<br />                .text( IntersectionSet[ id ].list.size() )<br />                .attr( &quot;x&quot;, (d3.event.pageX) )<br />                .attr( &quot;y&quot;, (d3.event.pageY) );</p> </div>
+          <div class="description"><p>var selectedSet = IntersectionSet[ id ].list;<br />            var intersectSetSize = selectedSet.size();</p><pre><code>        if ( intersectSetSize !== 0 ) {
+            var changeOpacity = unselectedShapeFillOpacity + (selectedShapeFillOpacity - unselectedShapeFillOpacity) * ratio;    
+            for ( var i = 0; i &lt; combination.length; i++ ){
+                var targetSize = IntersectionSet[ combination[i].toString() ].list.size();
+
+                var ratio = intersectSetSize / targetSize;
+
+                d3.select( &quot;#shape&quot; + combination[i] ).transition()
+                    .style( &quot;fill-opacity&quot;,  changeOpacity);
+            }
+        }
+</code></pre> </div>
+          <pre><code class="language-javascript">}
+
+//Update the tooltip position and value
+d3.select(&quot;#vennToolTip&quot;).transition()
+.style(&quot;left&quot;, (d3.event.pageX - 250) + &quot;px&quot;)
+.style(&quot;top&quot;, (d3.event.pageY - 5) + &quot;px&quot;)
+.style(&quot;position&quot;, &quot;absolute&quot;)
+.style(&quot;opacity&quot;, 0.6 )
+.style(&quot;z-index&quot;, 9);
+
+d3.select(&quot;#vennToolTipTitle&quot;)
+	.text( function () { 
+	return getNameByCombination( combination ) + &quot;:&quot;;
+});
+
+d3.select( &quot;#vennToolTipListSize&quot; )
+	.text( &quot; size = &quot; + IntersectionSet[ id ].list.size() );
+
+d3.select( &quot;#vennToolTipList&quot; )
+	.text( function () {
+		var text = &quot;&quot;;
+
+		if ( IntersectionSet[ id ] ) {
+			text += IntersectionSet[ id ].list.array().join(&quot; | &quot;);
+		}
+		
+		return text;
+	} );
+	};
+
+	var hideUnselectedShape = function( expection ) {
+var skip = false;
+
+for ( var i = 1; i &lt;= 7; i++ ){
+	for ( var j = 0; j &lt; expection.length; j++ ){
+		if ( expection[j] === i ) {
+			skip = true;
+			break;
+		}
+		else {
+			skip = false;
 		}
 	}
 
-	//Update the tooltip position and value
-	d3.select(&quot;#vennToolTip&quot;).transition()
-	.style(&quot;left&quot;, (d3.event.pageX - 250) + &quot;px&quot;)
-	.style(&quot;top&quot;, (d3.event.pageY - 5) + &quot;px&quot;)
-	.style(&quot;position&quot;, &quot;absolute&quot;)
-	.style(&quot;opacity&quot;, 0.6 )
-	.style(&quot;z-index&quot;, 9);
+	if ( skip ){
+		continue;
+	}
 
-	d3.select(&quot;#vennToolTipTitle&quot;)
-		.text( function () { 
-		return getNameByCombination( combination ) + &quot;:&quot;;
-	});
+	d3.select( &quot;#shape&quot; + i ).transition()
+		.style( &quot;fill-opacity&quot;, 0.1 );
+	d3.select( &quot;#text&quot; + i ).transition()
+		.style( &quot;fill-opacity&quot;, 0.1 );
+	d3.select( &quot;#titleText&quot; + i ).transition()
+		.style( &quot;fill-opacity&quot;, 0.1 );
 
-	d3.select( &quot;#vennToolTipListSize&quot; )
-		.text( &quot; size = &quot; + IntersectionSet[ id ].list.size() );
-
-	d3.select( &quot;#vennToolTipList&quot; )
-		.text( function () {
-			var text = &quot;&quot;;
-
-			if ( IntersectionSet[ id ] )
-				text += IntersectionSet[ id ].list.array().join(&quot; | &quot;);
-			
-			return text;
-		} );
-};
+}
+	};
 
 //Get set nambe by a list of combination/
 //For example, if List 1 intersect List 2 name is needed,
 //then combination = [ 1, 2 ]
 //@param {Array} combination Array of set index
 //@return {String} nume of the required set
-var getNameByCombination = function( combination ) {
-	var text =  nameList[ combination[0] - 1 ];
+	var getNameByCombination = function( combination ) {
 
-	for ( var i = 1; i &lt; combination.length; i++ ){
-		
-		if ( text !== &quot;&quot; )
-			text += &quot; in &quot; + nameList[ combination[i] - 1 ];
-		else
-			text += nameList[ combination[i] - 1 ];
+var text =  nameList[ combination[0] - 1 ];
+
+for ( var i = 1; i &lt; combination.length; i++ ){
+	
+	if ( text !== &quot;&quot; ) {
+		text += &quot; in &quot; + nameList[ combination[i] - 1 ];
 	}
+	else {
+		text += nameList[ combination[i] - 1 ];
+	}
+}
 
-	return text;
-};
+return text;
+	};
 
 //call this when mouse out svg event is triggered
-var mouseOutCall = function (target, id) {
-	d3.select(target).transition()
-		.style(&quot;fill-opacity&quot;, function () {
-			if ( typeof id == 'string' || id instanceof String)
-				return 0;
-	 		else 
-	 			return unselectedShapeFillOpacity;
-	  	})
-	 	.style(&quot;stroke-opacity&quot;, unselectedStrokeFillOpacity );
+	var mouseOutCall = function (target, id) {
+d3.select(target).transition()
+	.style(&quot;fill-opacity&quot;, function () {
+		if ( typeof id === &quot;string&quot; || id instanceof String){
+			return 0;
+		}
+ 		else {
+ 			return unselectedShapeFillOpacity;
+ 		}
+  	})
+ 	.style(&quot;stroke-opacity&quot;, unselectedStrokeFillOpacity );
        
-	var combination = IntersectionSet[ id ].combination;
+var combination = IntersectionSet[ id ].combination;
+recoverUnselectedShape( combination );
 
-	d3.select( &quot;#text&quot; + id ).transition()
-		.style( &quot;fill&quot;, &quot;black&quot; );
+d3.select( &quot;#text&quot; + id ).transition()
+	.style( &quot;fill&quot;, &quot;black&quot; );
 
-	if ( typeof id == 'string' || id instanceof String) {
+if ( typeof id === &quot;string&quot; || id instanceof String) {
 
-		var selectedSet = IntersectionSet[ id ].list;
-		var intersectSetSize = selectedSet.size();
+	var selectedSet = IntersectionSet[ id ].list;
+	var intersectSetSize = selectedSet.size();
 
-		if ( intersectSetSize !== 0 ) {
+	if ( intersectSetSize !== 0 ) {
+		for ( var i = 0; i &lt; combination.length; i++ ){
+			d3.select( &quot;#shape&quot; + combination[i] ).transition()
+				.style( &quot;fill-opacity&quot;, unselectedShapeFillOpacity )
+				.attr( &quot;x&quot;, -1 );
+		}
+	}
+}
 
-			for ( var i = 0; i &lt; combination.length; i++ ){
-				d3.select( &quot;#shape&quot; + combination[i] ).transition()
-					.style( &quot;fill-opacity&quot;, unselectedShapeFillOpacity )
-					.attr( &quot;x&quot;, -1 );
-			}
+       //Hide the tooltip
+d3.select(&quot;#vennToolTip&quot;).transition().style(&quot;opacity&quot;, 0 ); 
+	};
+
+	var recoverUnselectedShape = function ( expection ) {
+var skip = false;
+
+for ( var i = 1; i &lt;= 7; i++ ){
+	for ( var j = 0; j &lt; expection.length; j++ ){
+		if ( expection[j] === i ) {
+			skip = true;
+			break;
+		}
+		else {
+			skip = false;
 		}
 	}
 
-       //Hide the tooltip
-	d3.select(&quot;#vennToolTip&quot;).transition().style(&quot;opacity&quot;, 0 ); 
-};
+	if ( skip ){
+		continue;
+	}
+
+	d3.select( &quot;#shape&quot; + i ).transition()
+		.style( &quot;fill-opacity&quot;, unselectedShapeFillOpacity );
+	d3.select( &quot;#text&quot; + i ).transition()
+		.style( &quot;fill-opacity&quot;, 1 );
+	d3.select( &quot;#titleText&quot; + i ).transition()
+		.style( &quot;fill-opacity&quot;, 1 );
+
+}
+	};
 
 //callback function when the mouse move across the svg element.
-var mouseMoveCall = function () {
-	d3.select(&quot;#vennToolTip&quot;)
-		.style(&quot;left&quot;, (d3.event.pageX - 250) + &quot;px&quot;)
-		.style(&quot;top&quot;, (d3.event.pageY - 5) + &quot;px&quot;);	
-};
+	var mouseMoveCall = function () {
+d3.select(&quot;#vennToolTip&quot;)
+	.style(&quot;left&quot;, (d3.event.pageX - 250) + &quot;px&quot;)
+	.style(&quot;top&quot;, (d3.event.pageY - 5) + &quot;px&quot;);	
+	};
 
 //draw the predefined layout.
 //@param {Array} jsonData JSON object array which contain all the predefined inforation.
-var drawEllipse = function ( jsonData ){
+	var drawEllipse = function ( jsonData ){
 
-	if ( jsonData.length === 0 )
-		return;
+if ( jsonData.length === 0 ){
+	return;
+}
 
-	var targetTransform = jsonData.length - 1;
+var targetTransform = jsonData.length - 1;
 
-	var transformGroup = svg.append(&quot;g&quot;)
-							.attr( &quot;transform&quot;, &quot;scale(&quot; + transform[ targetTransform ].scale + &quot;) &quot; + &quot;translate(&quot; + transform[ targetTransform ].x + &quot;, &quot; + transform[ targetTransform ].y + &quot;)&quot; );
+var transformGroup = svg.append(&quot;g&quot;)
+						.attr( &quot;transform&quot;, &quot;scale(&quot; + transform[ targetTransform ].scale + &quot;) &quot; + &quot;translate(&quot; + transform[ targetTransform ].x + &quot;, &quot; + transform[ targetTransform ].y + &quot;)&quot; );
 
-	addWhiteBackground( transformGroup );
+addWhiteBackground( transformGroup );
 
-	var defs = transformGroup.append( &quot;defs&quot; )
-							.selectAll(&quot;_&quot;)
-							.data(jsonData)
-							.enter()
-							.append(&quot;g&quot;);
+var defs = transformGroup.append( &quot;defs&quot; )
+						.selectAll(&quot;_&quot;)
+						.data(jsonData)
+						.enter()
+						.append(&quot;g&quot;);
 
-	//use for clipping later.
-	var clipPath = defs.append( &quot;clipPath&quot; )
-																.attr( &quot;id&quot;, function (d) { return &quot;clip&quot; + d.id; } );
+//use for clipping later.
+var clipPath = defs.append( &quot;clipPath&quot; )
+				.attr( &quot;id&quot;, function (d) { return &quot;clip&quot; + d.id; } );
     
-	clipPath.append( &quot;ellipse&quot; )
-		.attr(&quot;transform&quot;, function (d) { return &quot;rotate(&quot; + d.rotate + &quot;, &quot; + d.cx + &quot;, &quot; + d.cy + &quot;) &quot;; })
-		.attr(&quot;cx&quot;, function (d) { return d.cx;} ).attr(&quot;cy&quot;, function (d) { return d.cy; } )
-		.attr(&quot;rx&quot;, function (d) { return d.rx;} ).attr(&quot;ry&quot;, function (d) { return d.ry; } );
+clipPath.append( &quot;ellipse&quot; )
+	.attr(&quot;transform&quot;, function (d) { return &quot;rotate(&quot; + d.rotate + &quot;, &quot; + d.cx + &quot;, &quot; + d.cy + &quot;) &quot;; })
+	.attr(&quot;cx&quot;, function (d) { return d.cx;} ).attr(&quot;cy&quot;, function (d) { return d.cy; } )
+	.attr(&quot;rx&quot;, function (d) { return d.rx;} ).attr(&quot;ry&quot;, function (d) { return d.ry; } );
 
-	// This part is used to create a fake Stroke for the clipping. However, this part is not longer used.
-	//defs.append( &quot;clipPath&quot; )
-	//	.attr( &quot;id&quot;, function (d) { return &quot;clipL&quot; + d.id } )
-	//	.append( &quot;ellipse&quot; )
-	//	.attr(&quot;transform&quot;, function (d) { return &quot;rotate(&quot; + d.rotate + &quot;, &quot; + d.cx + &quot;, &quot; + d.cy + &quot;) &quot; })
-	//	.attr(&quot;cx&quot;, function (d) { return d.cx} ).attr(&quot;cy&quot;, function (d) { return d.cy } )
-	//	.attr(&quot;rx&quot;, function (d) { return d.rx + StrokeWidth} ).attr(&quot;ry&quot;, function (d) { return d.ry + StrokeWidth} );
-	//
-	var shapeGroup = transformGroup.selectAll(&quot;_&quot;)
-								.data(jsonData)
-								.enter()
-								.append( &quot;g&quot; );
-
-	shapeGroup.append( &quot;ellipse&quot; )
-			.attr( &quot;id&quot;, function (d) { return &quot;shape&quot; + d.id; } )
-			.attr(&quot;transform&quot;, function (d) { return &quot;rotate(&quot; + d.rotate + &quot;, &quot; + d.cx + &quot;, &quot; + d.cy + &quot;) &quot;; })
-			.attr(&quot;cx&quot;, function (d) { return d.cx;} ).attr(&quot;cy&quot;, function (d) { return d.cy; } )
-			.attr(&quot;rx&quot;, function (d) { return d.rx;} ).attr(&quot;ry&quot;, function (d) { return d.ry; } )
-			.style(&quot;fill&quot;, function(d) { return predefineColor[d.id]; })
-			.style(&quot;fill-opacity&quot;, unselectedShapeFillOpacity )
-			.style(&quot;stroke-opacity&quot;, unselectedStrokeFillOpacity )
-			.style(&quot;stroke&quot;, predefineStrokeColor )
-			.style(&quot;stroke-width&quot;, StrokeWidth )
-			.on(&quot;mouseover&quot;, function (d) { mouseOverCall(this, d.id); })
-			.on(&quot;mouseout&quot;, function (d)  { mouseOutCall(this, d.id); })
-			.on(&quot;mousemove&quot;, function () { mouseMoveCall(); })
-			.on(&quot;click&quot;, function (d) { mouseClickCall( d.id ); } );
-
-	shapeGroup.append( &quot;text&quot; )
-			.attr( &quot;id&quot;, function (d) { return &quot;text&quot; + d.id; } )
-			.text( function (d){
-				if ( !IntersectionSet[ d.id.toString() ] )
-					return 0;
-				else
-					return IntersectionSet[ d.id.toString() ].list.size();
-			} )
-			.attr(&quot;x&quot;, function (d) { return d.textX; } ).attr(&quot;y&quot;, function(d){ return d.textY; });
-
-	//combinationList -&gt; 	4
-	//					3 4,3
-	//					2 4,2 3,2 4,3,2
-	//					1 4,1 4,3,1 2,1 4,2,1  
-	//
-
-	drawClip( combinationList, transformGroup );
-
-	if ( jsonData.length &gt; 1 )
-		putPredefinedTextLabel( jsonData.length, transformGroup );
-	    
-};
-
-//similar to drawEllipse, this one is polygon version.
-var drawPath = function ( jsonData ){
-
-	if ( jsonData.length === 0 )
-		return;
-
-	//  How to seperate Polygon and intersect?
-	//	Take a look at the predefine JSON data at the very begining.
-	//	For interesct area, the id is String. (e.g. &quot;1_2&quot;)
-	//
-	//Here is how to check is the data for intersect or for shape.
-	//if ( typeof jsonData[1].id == 'string' || jsonData.id instanceof String) {
-	//
-	//}
-
-	var targetTransform = jsonData.length - 1;
-
-	var transformGroup = svg.append(&quot;g&quot;)
-							.attr( &quot;transform&quot;, &quot;scale(&quot; + transform[ targetTransform ].scale + &quot;) &quot; + &quot;translate(&quot; + transform[ targetTransform ].x + &quot;, &quot; + transform[ targetTransform ].y + &quot;)&quot; );
-
-	addWhiteBackground( transformGroup );
-
-	var defs = transformGroup.append( &quot;defs&quot; )
-							.selectAll(&quot;_&quot;)
+// This part is used to create a fake Stroke for the clipping. However, this part is not longer used.
+//defs.append( &quot;clipPath&quot; )
+//	.attr( &quot;id&quot;, function (d) { return &quot;clipL&quot; + d.id } )
+//	.append( &quot;ellipse&quot; )
+//	.attr(&quot;transform&quot;, function (d) { return &quot;rotate(&quot; + d.rotate + &quot;, &quot; + d.cx + &quot;, &quot; + d.cy + &quot;) &quot; })
+//	.attr(&quot;cx&quot;, function (d) { return d.cx} ).attr(&quot;cy&quot;, function (d) { return d.cy } )
+//	.attr(&quot;rx&quot;, function (d) { return d.rx + StrokeWidth} ).attr(&quot;ry&quot;, function (d) { return d.ry + StrokeWidth} );
+//
+var shapeGroup = transformGroup.selectAll(&quot;_&quot;)
 							.data(jsonData)
 							.enter()
-							.append(&quot;g&quot;);
+							.append( &quot;g&quot; );
 
-	defs.append( &quot;clipPath&quot; )
-		.attr( &quot;id&quot;, function (d) { return &quot;clip&quot; + d.id; } )
-		.append(&quot;path&quot;)
-		.attr( &quot;d&quot;, function (d){ return d.d; } );
-
-	var shapeGroup = transformGroup.selectAll(&quot;_&quot;)
-								.data(jsonData)
-								.enter()
-								.append( &quot;g&quot; );
-
-
-	shapeGroup.attr( &quot;id&quot;, function (d) { return &quot;shape&quot; + d.id; } )
-			.append(&quot;path&quot;)
-			.attr( &quot;id&quot;, function (d){ return d.id; } )
-			.attr( &quot;d&quot;, function (d){ return d.d; } )
-			.attr( &quot;fill&quot;, function (d) { return predefineColor[d.id]; } )
-			.style(&quot;fill-opacity&quot;, function () { return unselectedShapeFillOpacity; } )
-			.style(&quot;stroke-opacity&quot;, unselectedStrokeFillOpacity )
-			.style(&quot;stroke&quot;, function () { return predefineStrokeColor; } )
-			.style(&quot;stroke-width&quot;, StrokeWidth )
-			.on(&quot;mouseover&quot;, function (d) {  mouseOverCall(this, d.id); })
-			.on(&quot;mouseout&quot;, function (d) {  mouseOutCall(this, d.id); })
-			.on(&quot;mousemove&quot;, function () { mouseMoveCall(); })
-			.on(&quot;click&quot;, function (d) { mouseClickCall( d.id ); } );
-
-	shapeGroup.append( &quot;text&quot; )
-		.attr( &quot;id&quot;, function (d){ return &quot;text&quot; + d.id; } )
-		.text( function (d){
-			if ( !IntersectionSet[ d.id.toString() ] )
-				return 0;
-			else
-				return IntersectionSet[ d.id.toString() ].list.size(); } )
-		.attr(&quot;x&quot;, function (d) { return d.textX; } ).attr(&quot;y&quot;, function(d){ return d.textY; });
-
-	drawClip( combinationList, transformGroup );
-
-	if ( jsonData.length &gt; 1 )
-		putPredefinedTextLabel( jsonData.length, transformGroup );
-};
-
-//Put predefined text label on the graph.
-//This method called by drawEplise() and drawPath()
-//@param {Number} numberOfSets number of sets have be drawn
-//@param {Object} drawSVG on which svg object should put text label
-var putPredefinedTextLabel = function( numberOfSets, drawSVG ){
-	drawSVG.selectAll(&quot;_&quot;)
-			.data( predefineIntersectText[numberOfSets] )
-			.enter()
-			.append( &quot;g&quot; )
-			.append( &quot;text&quot; )
-			.attr( &quot;id&quot;, function (d) { return &quot;text&quot; + d.id; } )
-			.attr( &quot;x&quot;, function (d) { return d.textX; } ).attr(&quot;y&quot;, function(d){ return d.textY; })
-			.text( function (d){
-				if ( !IntersectionSet[ d.id.toString() ] )
-					return 0;
-				else
-					return IntersectionSet[ d.id.toString() ].list.size(); } );
-};
-
-//automatically generated the Venn digram. The graph is
-//rotationally symmetrical arrangement devised by Branko Grünbaum.
-//Only can generate Venn diagram up to 5 sets.
-//This wll only generate Euler diagram.
-//@param {Number} num number of set want to be generated
-var drawVenn = function (num) {
-
-	var toRadian = function ( degree ) {
-		return degree * Math.PI / 180;
-	};
-
-	var rotateAngle = 360 / num;
-
-	var x = 300, y = 320;
-	var rx = 200, ry = 110;
-	var startAngle = rotateAngle;
-
-	var magnitudeA = 55;
-	var magnitudeB = 18;
-
-	var directionA = startAngle + 180;			//in degree
-	var directionB = rotateAngle;				//in degree
-	
-	var nextX = x, nextY = y;
-
-	var graphData = [], textData = [], titleData = [];
-
-	for ( var i = 0; i &lt; num; i++ ){
-		nextX += magnitudeA * Math.cos( toRadian(directionA + rotateAngle * i) );
-		nextY += magnitudeA * Math.sin( toRadian(directionA + rotateAngle * i) );
-		
-		var toBDirection = toRadian(directionB + rotateAngle * i);
-		graphData.push( { id: i + 1, rotate: startAngle + rotateAngle * i, rx: rx, ry: ry,
-						cx: nextX + magnitudeB * Math.cos( toBDirection ),
-						cy: nextY + magnitudeB * Math.sin( toBDirection ) } );
-		textData.push( { id: i + 1, 
-						x: nextX - ( magnitudeB + rx * 0.71 ) * Math.cos( toBDirection ),
-						y: nextY - ( magnitudeB + rx * 0.71 ) * Math.sin( toBDirection ) } );
-		titleData.push( { id: i + 1, 
-						x: nextX - ( magnitudeB + rx ) * Math.cos( toBDirection ),
-						y: nextY - ( magnitudeB + rx ) * Math.sin( toBDirection ) } );
-		nextX += magnitudeB * Math.cos( toBDirection );
-		nextY += magnitudeB * Math.sin( toBDirection );
-	}
-
-	var transformGroup = svg.append(&quot;g&quot;)
-							.attr( &quot;transform&quot;, &quot;scale(&quot; + transform[num - 1].scale + &quot;) &quot; + &quot;translate(&quot; + transform[num - 1].x + &quot;, &quot; + transform[num - 1].y + &quot;)&quot; );
-
-	addWhiteBackground( transformGroup );
-
-	var defs = transformGroup.append( &quot;defs&quot; )
-							.selectAll(&quot;_&quot;)
-							.data(graphData)
-							.enter()
-							.append(&quot;g&quot;);
-
-	defs.append( &quot;clipPath&quot; )
-		.attr( &quot;id&quot;, function (d) { return &quot;clip&quot; + d.id; } )
-		.append( &quot;ellipse&quot; )
-		.attr(&quot;transform&quot;, function (d) { return &quot;rotate(&quot; + d.rotate + &quot;, &quot; + d.cx + &quot;, &quot; + d.cy + &quot;) &quot;; })
-		.attr(&quot;cx&quot;, function (d) { return d.cx;} ).attr(&quot;cy&quot;, function (d) { return d.cy; } )
-		.attr(&quot;rx&quot;, function (d) { return d.rx;} ).attr(&quot;ry&quot;, function (d) { return d.ry; } );
-
-
-	var shapeGroup = transformGroup.selectAll(&quot;_&quot;)
-								.data(graphData)
-								.enter()
-								.append( &quot;g&quot; );
-
-	shapeGroup.append( &quot;ellipse&quot; )
+shapeGroup.append( &quot;ellipse&quot; )
 		.attr( &quot;id&quot;, function (d) { return &quot;shape&quot; + d.id; } )
 		.attr(&quot;transform&quot;, function (d) { return &quot;rotate(&quot; + d.rotate + &quot;, &quot; + d.cx + &quot;, &quot; + d.cy + &quot;) &quot;; })
 		.attr(&quot;cx&quot;, function (d) { return d.cx;} ).attr(&quot;cy&quot;, function (d) { return d.cy; } )
 		.attr(&quot;rx&quot;, function (d) { return d.rx;} ).attr(&quot;ry&quot;, function (d) { return d.ry; } )
-		.style(&quot;fill&quot;, function (d) { return predefineColor[d.id]; })
+		.style(&quot;fill&quot;, function(d) { return predefineColor[d.id]; })
 		.style(&quot;fill-opacity&quot;, unselectedShapeFillOpacity )
 		.style(&quot;stroke-opacity&quot;, unselectedStrokeFillOpacity )
 		.style(&quot;stroke&quot;, predefineStrokeColor )
@@ -1027,51 +914,263 @@ var drawVenn = function (num) {
 		.on(&quot;mousemove&quot;, function () { mouseMoveCall(); })
 		.on(&quot;click&quot;, function (d) { mouseClickCall( d.id ); } );
 
-	drawClip( combinationList, transformGroup );
+shapeGroup.append( &quot;text&quot; )
+		.attr( &quot;id&quot;, function (d) { return &quot;text&quot; + d.id; } )
+		.text( function (d){
+			if ( !IntersectionSet[ d.id.toString() ] ){
+				return 0;
+			}
+			else{
+				return IntersectionSet[ d.id.toString() ].list.size();
+			}
+		} )
+		.attr(&quot;x&quot;, function (d) { return d.textX; } ).attr(&quot;y&quot;, function(d){ return d.textY; });
 
-	
-	var textGroup = transformGroup.selectAll(&quot;_&quot;)
-								.data(textData)
-								.enter()
-								.append( &quot;g&quot; );
+//combinationList -&gt; 	4
+//					3 4,3
+//					2 4,2 3,2 4,3,2
+//					1 4,1 4,3,1 2,1 4,2,1  
+//
 
-	textGroup.append( &quot;text&quot; )
-			.attr( &quot;id&quot;, function (d) { return &quot;text&quot; + d.id; } )
-			.attr( &quot;x&quot;, function (d) { return d.x; } ).attr( &quot;y&quot;, function (d) { return d.y; } )
-			.text( function (d) {
-				if ( !IntersectionSet[ d.id.toString() ] )
-					return 0;
-				else
-					return IntersectionSet[ d.id.toString() ].list.size();
-			} );
-	
-	var titleGroup = transformGroup.selectAll(&quot;_&quot;)
-							.data(titleData)
+drawClip( combinationList, transformGroup );
+
+if ( jsonData.length &gt; 1 ) {
+	putPredefinedTextLabel( jsonData.length, transformGroup );
+}
+    
+	};
+
+//similar to drawEllipse, this one is polygon version.
+	var drawPath = function ( jsonData ){
+
+if ( jsonData.length === 0 ) {
+	return;
+}
+
+//  How to seperate Polygon and intersect?
+//	Take a look at the predefine JSON data at the very begining.
+//	For interesct area, the id is String. (e.g. &quot;1_2&quot;)
+//
+//Here is how to check is the data for intersect or for shape.
+//if ( typeof jsonData[1].id === 'string' || jsonData.id instanceof String) {
+//
+//}
+
+var targetTransform = jsonData.length - 1;
+
+var transformGroup = svg.append(&quot;g&quot;)
+						.attr( &quot;transform&quot;, &quot;scale(&quot; + transform[ targetTransform ].scale + &quot;) &quot; + &quot;translate(&quot; + transform[ targetTransform ].x + &quot;, &quot; + transform[ targetTransform ].y + &quot;)&quot; );
+
+addWhiteBackground( transformGroup );
+
+var defs = transformGroup.append( &quot;defs&quot; )
+						.selectAll(&quot;_&quot;)
+						.data(jsonData)
+						.enter()
+						.append(&quot;g&quot;);
+
+defs.append( &quot;clipPath&quot; )
+	.attr( &quot;id&quot;, function (d) { return &quot;clip&quot; + d.id; } )
+	.append(&quot;path&quot;)
+	.attr( &quot;d&quot;, function (d){ return d.d; } );
+
+var shapeGroup = transformGroup.selectAll(&quot;_&quot;)
+							.data(jsonData)
 							.enter()
 							.append( &quot;g&quot; );
 
-	titleGroup.append( &quot;text&quot; )
-			.attr( &quot;id&quot;, function (d) { return &quot;titleText&quot; + d.id; } )
-			.attr( &quot;x&quot;, function (d) { return d.x; } ).attr( &quot;y&quot;, function (d) { return d.y; } )
-			.style( &quot;fill&quot;, function (d) { return predefineColor[ d.id ]; } )
-			.text( function (d) {
-				return nameList[d.id - 1];
-			} );</code></pre>
+
+shapeGroup.attr( &quot;id&quot;, function (d) { return &quot;shape&quot; + d.id; } )
+		.append(&quot;path&quot;)
+		.attr( &quot;id&quot;, function (d){ return d.id; } )
+		.attr( &quot;d&quot;, function (d){ return d.d; } )
+		.attr( &quot;fill&quot;, function (d) { return predefineColor[d.id]; } )
+		.style(&quot;fill-opacity&quot;, function () { return unselectedShapeFillOpacity; } )
+		.style(&quot;stroke-opacity&quot;, unselectedStrokeFillOpacity )
+		.style(&quot;stroke&quot;, function () { return predefineStrokeColor; } )
+		.style(&quot;stroke-width&quot;, StrokeWidth )
+		.on(&quot;mouseover&quot;, function (d) {  mouseOverCall(this, d.id); })
+		.on(&quot;mouseout&quot;, function (d) {  mouseOutCall(this, d.id); })
+		.on(&quot;mousemove&quot;, function () { mouseMoveCall(); })
+		.on(&quot;click&quot;, function (d) { mouseClickCall( d.id ); } );
+
+shapeGroup.append( &quot;text&quot; )
+	.attr( &quot;id&quot;, function (d){ return &quot;text&quot; + d.id; } )
+	.text( function (d){
+		if ( !IntersectionSet[ d.id.toString() ] ){
+			return 0;
+		}
+		else {
+			return IntersectionSet[ d.id.toString() ].list.size(); 
+		}
+	 })
+	.attr(&quot;x&quot;, function (d) { return d.textX; } )
+	.attr(&quot;y&quot;, function (d) { return d.textY; } );
+
+drawClip( combinationList, transformGroup );
+
+if ( jsonData.length &gt; 1 ){
+	putPredefinedTextLabel( jsonData.length, transformGroup );
+}
+	};
+
+//Put predefined text label on the graph.
+//This method called by drawEplise() and drawPath()
+//@param {Number} numberOfSets number of sets have be drawn
+//@param {Object} drawSVG on which svg object should put text label
+	var putPredefinedTextLabel = function( numberOfSets, drawSVG ){
+
+drawSVG.selectAll(&quot;_&quot;)
+		.data( predefineIntersectText[numberOfSets] )
+		.enter()
+		.append( &quot;g&quot; )
+		.append( &quot;text&quot; )
+		.attr( &quot;id&quot;, function (d) { return &quot;text&quot; + d.id; } )
+		.attr( &quot;x&quot;, function (d) { return d.textX; } ).attr(&quot;y&quot;, function(d){ return d.textY; })
+		.text( function (d){
+			if ( !IntersectionSet[ d.id.toString() ] ){
+				return 0;
+			}
+			else {
+				return IntersectionSet[ d.id.toString() ].list.size(); 
+			}
+		 });
+	};
+
+//automatically generated the Venn digram. The graph is
+//rotationally symmetrical arrangement devised by Branko Grünbaum.
+//Only can generate Venn diagram up to 5 sets.
+//This wll only generate Euler diagram.
+//@param {Number} num number of set want to be generated
+	var drawVenn = function (num) {
+
+var toRadian = function ( degree ) {
+	return degree * Math.PI / 180;
+};
+
+var rotateAngle = 360 / num;
+
+var x = 300, y = 320;
+var rx = 200, ry = 110;
+var startAngle = rotateAngle;
+
+var magnitudeA = 55;
+var magnitudeB = 18;
+
+var directionA = startAngle + 180;			//in degree
+var directionB = rotateAngle;				//in degree
+
+var nextX = x, nextY = y;
+
+var graphData = [], textData = [], titleData = [];
+
+for ( var i = 0; i &lt; num; i++ ){
+	nextX += magnitudeA * Math.cos( toRadian(directionA + rotateAngle * i) );
+	nextY += magnitudeA * Math.sin( toRadian(directionA + rotateAngle * i) );
+	
+	var toBDirection = toRadian(directionB + rotateAngle * i);
+	graphData.push( { id: i + 1, rotate: startAngle + rotateAngle * i, rx: rx, ry: ry,
+					cx: nextX + magnitudeB * Math.cos( toBDirection ),
+					cy: nextY + magnitudeB * Math.sin( toBDirection ) } );
+	textData.push( { id: i + 1, 
+					x: nextX - ( magnitudeB + rx * 0.71 ) * Math.cos( toBDirection ),
+					y: nextY - ( magnitudeB + rx * 0.71 ) * Math.sin( toBDirection ) } );
+	titleData.push( { id: i + 1, 
+					x: nextX - ( magnitudeB + rx ) * Math.cos( toBDirection ),
+					y: nextY - ( magnitudeB + rx ) * Math.sin( toBDirection ) } );
+	nextX += magnitudeB * Math.cos( toBDirection );
+	nextY += magnitudeB * Math.sin( toBDirection );
+}
+
+var transformGroup = svg.append(&quot;g&quot;)
+						.attr( &quot;transform&quot;, &quot;scale(&quot; + transform[num - 1].scale + &quot;) &quot; + &quot;translate(&quot; + transform[num - 1].x + &quot;, &quot; + transform[num - 1].y + &quot;)&quot; );
+
+addWhiteBackground( transformGroup );
+
+var defs = transformGroup.append( &quot;defs&quot; )
+						.selectAll(&quot;_&quot;)
+						.data(graphData)
+						.enter()
+						.append(&quot;g&quot;);
+
+defs.append( &quot;clipPath&quot; )
+	.attr( &quot;id&quot;, function (d) { return &quot;clip&quot; + d.id; } )
+	.append( &quot;ellipse&quot; )
+	.attr(&quot;transform&quot;, function (d) { return &quot;rotate(&quot; + d.rotate + &quot;, &quot; + d.cx + &quot;, &quot; + d.cy + &quot;) &quot;; })
+	.attr(&quot;cx&quot;, function (d) { return d.cx;} ).attr(&quot;cy&quot;, function (d) { return d.cy; } )
+	.attr(&quot;rx&quot;, function (d) { return d.rx;} ).attr(&quot;ry&quot;, function (d) { return d.ry; } );
+
+
+var shapeGroup = transformGroup.selectAll(&quot;_&quot;)
+							.data(graphData)
+							.enter()
+							.append( &quot;g&quot; );
+
+shapeGroup.append( &quot;ellipse&quot; )
+	.attr( &quot;id&quot;, function (d) { return &quot;shape&quot; + d.id; } )
+	.attr(&quot;transform&quot;, function (d) { return &quot;rotate(&quot; + d.rotate + &quot;, &quot; + d.cx + &quot;, &quot; + d.cy + &quot;) &quot;; })
+	.attr(&quot;cx&quot;, function (d) { return d.cx;} ).attr(&quot;cy&quot;, function (d) { return d.cy; } )
+	.attr(&quot;rx&quot;, function (d) { return d.rx;} ).attr(&quot;ry&quot;, function (d) { return d.ry; } )
+	.style(&quot;fill&quot;, function (d) { return predefineColor[d.id]; })
+	.style(&quot;fill-opacity&quot;, unselectedShapeFillOpacity )
+	.style(&quot;stroke-opacity&quot;, unselectedStrokeFillOpacity )
+	.style(&quot;stroke&quot;, predefineStrokeColor )
+	.style(&quot;stroke-width&quot;, StrokeWidth )
+	.on(&quot;mouseover&quot;, function (d) { mouseOverCall(this, d.id); })
+	.on(&quot;mouseout&quot;, function (d)  { mouseOutCall(this, d.id); })
+	.on(&quot;mousemove&quot;, function () { mouseMoveCall(); })
+	.on(&quot;click&quot;, function (d) { mouseClickCall( d.id ); } );
+
+drawClip( combinationList, transformGroup );
+
+
+var textGroup = transformGroup.selectAll(&quot;_&quot;)
+							.data(textData)
+							.enter()
+							.append( &quot;g&quot; );
+
+textGroup.append( &quot;text&quot; )
+		.attr( &quot;id&quot;, function (d) { return &quot;text&quot; + d.id; } )
+		.attr( &quot;x&quot;, function (d) { return d.x; } ).attr( &quot;y&quot;, function (d) { return d.y; } )
+		.text( function (d) {
+			if ( !IntersectionSet[ d.id.toString() ] ){
+				return 0;
+			}
+			else{
+				return IntersectionSet[ d.id.toString() ].list.size();
+			}
+		} );
+
+var titleGroup = transformGroup.selectAll(&quot;_&quot;)
+						.data(titleData)
+						.enter()
+						.append( &quot;g&quot; );
+
+titleGroup.append( &quot;text&quot; )
+		.attr( &quot;id&quot;, function (d) { return &quot;titleText&quot; + d.id; } )
+		.attr( &quot;x&quot;, function (d) { return d.x; } ).attr( &quot;y&quot;, function (d) { return d.y; } )
+		.style( &quot;fill&quot;, function (d) { return predefineColor[ d.id ]; } )
+		.text( function (d) {
+			return nameList[d.id - 1];
+		} );</code></pre>
           <div class="description"><p>text lable for the size of intersect of all lists.</p> </div>
           <pre><code class="language-javascript">if ( num &gt;= 2 ) {
 	var allIntersectText = &quot;1&quot;;</code></pre>
           <div class="description"><p>generate 1in2in......</p> </div>
-          <pre><code class="language-javascript">for ( i = 2; i &lt;= num; i++ )
+          <pre><code class="language-javascript">for ( i = 2; i &lt;= num; i++ ){
 	allIntersectText += &quot;in&quot; + i;
+}
 
 transformGroup.append( &quot;text&quot; )
 	.attr( &quot;id&quot;, &quot;text&quot; + allIntersectText )
 	.attr( &quot;x&quot;, x ).attr( &quot;y&quot;, y - magnitudeB )
 	.text( function () {
-		if ( !IntersectionSet[ allIntersectText ] )
+		if ( !IntersectionSet[ allIntersectText ] ){
 			return 0;
-		else
+		}
+		else{
 			return IntersectionSet[ allIntersectText ].list.size();
+		}
 	} );
 		}
 	};
@@ -1098,8 +1197,9 @@ return group.append( &quot;rect&quot; )
 
 		for ( var i = 0; i &lt; combination.length; i++ ) {
 for ( var j = 0; j &lt; combination[i].length; j++  ){
-	if ( combination[i][j].length == 1 )
+	if ( combination[i][j].length === 1 ){
 		continue;
+	}
 
 	var targetID = combination[i][j].join(&quot;in&quot;);
 
@@ -1128,39 +1228,47 @@ for ( var j = 0; j &lt; combination[i].length; j++  ){
 
 		svg.select(&quot;*&quot;).remove();
 
-		if ( this._listSets.length === 0 )
+		if ( this._listSets.length === 0 ){
 return;
+		}
 
 		if ( this.autoLayout ){
 drawVenn( this._listSets.length );
 		}
 		else{
-if ( this._listSets.length != 6 ) 
+if ( this._listSets.length !== 6 ){ 
 	drawEllipse( predefineShape[ this._listSets.length ] );
-else
+}
+else{
 	drawPath( predefineShape[ this._listSets.length ] );
+}
 		}
 	};
 
 //comput all intersection set base on the sets provided by user
 //@return {object} all intersection set
 	this._generateAllIntersectSets = function ( ){
-
 		var ans = {};
 
 		for ( var i = this._listSets.length - 1; i &gt;= 0; i-- ) {
 var result = {};
 
-if ( this._listSets[i] )
+if ( this._listSets[i] ){
 	result[ (i + 1).toString() ] = this._listSets[i].list;
+}
 
 
 for ( var key in ans ){
-	if ( this._listSets[ i ] ) 
+	if ( this._listSets[ i ] ) {
 		result[ ( i +1 ).toString() + &quot;in&quot; + key] = ans[key].intersection( this._listSets[ i ].list );
+	}
 	
 }
-for (var attrname in result) { if (result.hasOwnProperty(attrname)) ans[attrname] = result[attrname]; }
+for (var attrname in result) { 
+	if (result.hasOwnProperty(attrname)) { 
+		ans[attrname] = result[attrname];
+	} 
+}
 		}
 
 		combinationList.length = 0;
@@ -1175,31 +1283,37 @@ for (var attrname in result) { if (result.hasOwnProperty(attrname)) ans[attrname
 		IntersectionSet = {};
 
 		for ( var key in ans.list ) {
-if ( ans.list.hasOwnProperty(key) )
+if ( ans.list.hasOwnProperty(key) ) {
 	IntersectionSet[ key ] = { list: ans.list[key], combination: [] };
+}
 		}
 
-		for ( var  i = 0; i &lt; combinationList.length; i++ )
-for ( var j = 0; j &lt; combinationList[i].length; j++ )
+		for ( var  i = 0; i &lt; combinationList.length; i++ ) {
+for ( var j = 0; j &lt; combinationList[i].length; j++ ) {
 	IntersectionSet[ combinationList[i][j].reverse().join(&quot;in&quot;) ].combination = combinationList[i][j];
+}
+		}
 	};
 
 //update a specific set name
 	this._updateName = function ( i, name ){
+
 		this._listSets[i].name = name;
 		nameList[i] = name;
 
 		var text = d3.select( &quot;#titleText&quot; + (i + 1) );
 
-		if ( text.node() )
+		if ( text.node() ) {
 text.text( name );
+		}
 	};
 
 //update text when the intersection set is changed
 	this._updateText = function () {
-		
-		if ( !IntersectionSet )
+
+		if ( !IntersectionSet ) {
 return;
+		}
 
 		for ( var key in IntersectionSet ){
 if ( IntersectionSet.hasOwnProperty(key) ){
@@ -1216,8 +1330,9 @@ if ( IntersectionSet.hasOwnProperty(key) ){
 	};
 
 	this._setclickChartCallback = function( x ){
-		if ( x &amp;&amp; x instanceof Function )
+		if ( x &amp;&amp; x instanceof Function ) {
 clickChartCallback = x;
+		}
 	};
 
 	this._getIntersectSetsName = function ( combination ) {
@@ -1230,38 +1345,64 @@ clickChartCallback = x;
 
 	this._getlastRequireSet = function () {
 		return lastRequireSet;
-	};
-
-//save the text into a file.
-//@param {String} fileName the name of the file which is going to be downloaded.
-//@param {String} textToWrite the content of the file 
-	this._savefile = function ( fileName ,textToWrite ) {
-		var textFileAsBlob = new Blob([textToWrite], {type:'text/plain'});
-		var fileNameToSaveAs = fileName;
-
-		var downloadLink = document.createElement(&quot;a&quot;);
-		downloadLink.download = fileNameToSaveAs;
-		downloadLink.innerHTML = &quot;Download File&quot;;
-		downloadLink.id = &quot;use-to-download-text-file&quot;;
-
-		if (window.webkitURL !== null)
-		{
-// Chrome allows the link to be clicked
-// without actually adding it to the DOM.
-downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
-		}
-		else
-		{
-// Firefox requires the link to be added to the DOM
-// before it can be clicked.
-downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
-downloadLink.onclick = function(event) { document.body.removeChild(event.target);};
-downloadLink.style.display = &quot;none&quot;;
-document.body.appendChild(downloadLink);
-		}
-
-		downloadLink.click();
 	};</code></pre>
+          <section id="_savefile">
+            <h1>_savefile</h1>
+            <h5 class="subheader"></h5>
+            <p>
+              <div class="label label-info radius ctx-type">method</div><span>this._savefile()</span>
+            </p>
+          </section>
+          <table class="table table-bordered table-striped">
+            <thead>
+              <tr>
+                <th style="width:20%">Option name</th>
+                <th style="width:20%">Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>fileName</td>
+                <td>String</td>
+                <td>&lt;p&gt;the name of the file which is going to be downloaded.&lt;/p&gt;</td>
+              </tr>
+              <tr>
+                <td>textToWrite</td>
+                <td>String</td>
+                <td>&lt;p&gt;the content of the file&lt;/p&gt;</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="description"><p>save the text into a file.</p> </div>
+          <pre><code class="language-javascript">this._savefile = function ( fileName ,textToWrite ) {
+
+	var textFileAsBlob = new Blob([textToWrite], {type:&quot;text/plain&quot;});
+	var fileNameToSaveAs = fileName;
+
+	var downloadLink = document.createElement(&quot;a&quot;);
+	downloadLink.download = fileNameToSaveAs;
+	downloadLink.innerHTML = &quot;Download File&quot;;
+	downloadLink.id = &quot;use-to-download-text-file&quot;;
+
+	if (window.webkitURL !== null)
+	{
+		// Chrome allows the link to be clicked
+		// without actually adding it to the DOM.
+		downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
+	}
+	else
+	{
+		// Firefox requires the link to be added to the DOM
+		// before it can be clicked.
+		downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+		downloadLink.onclick = function(event) { document.body.removeChild(event.target);};
+		downloadLink.style.display = &quot;none&quot;;
+		document.body.appendChild(downloadLink);
+	}
+
+	downloadLink.click();
+};</code></pre>
           <section id="saveAsPNG">
             <h1>saveAsPNG</h1>
             <h5 class="subheader"></h5>
@@ -1271,7 +1412,6 @@ document.body.appendChild(downloadLink);
           </section>
           <div class="description"><p>Save the Venn diagram into PNG.</p> </div>
           <pre><code class="language-javascript">this.saveAsPNG = function(){
-
 	var canvas = d3.select( &quot;body&quot; )
 					.append( &quot;canvas&quot; )
 					.attr( &quot;width&quot;, w )
@@ -1283,7 +1423,7 @@ document.body.appendChild(downloadLink);
 							.node().parentNode.innerHTML;
 
 	var context = canvas.node().getContext(&quot;2d&quot;);
-	var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
+	var imgsrc = &quot;data:image/svg+xml;base64,&quot;+ btoa(html);
 
 	var image = new Image();
 	image.src = imgsrc;
@@ -1298,8 +1438,9 @@ document.body.appendChild(downloadLink);
 		for ( var key in IntersectionSet ){
 			if ( IntersectionSet.hasOwnProperty(key) ){
 				text = d3.select( &quot;#text&quot; + key );
-				if ( text.node() )
+				if ( text.node() ) {
 					textPosition.push( { x: text.attr( &quot;x&quot; ), y: text.attr( &quot;y&quot; ), text: IntersectionSet[key].list.size() } );
+				}
 			}
 		}
 
@@ -1315,8 +1456,9 @@ document.body.appendChild(downloadLink);
 		textPosition = [];
 		for ( var i = 1; i &lt;= 7; i++ ) {
 			text = d3.select( &quot;#titleText&quot; + i );
-			if ( text.node() )
+			if ( text.node() ) {
 				textPosition.push( { x: text.attr( &quot;x&quot; ), y: text.attr( &quot;y&quot; ), text: nameList[ i - 1 ] } );
+			}
 		}
 
 		if ( textPosition.length &gt; 0 ){
@@ -1395,8 +1537,9 @@ var transform = [];
 
   var i, j;
   
-for (  i = 0; i &lt; this._N; i++ )
+for (  i = 0; i &lt; this._N; i++ ) {
 	transform.push( { x: 0, y: 0, scale: 1 } );
+}
 
 //starting from this point is magic! Don't touch!
 //This maigc is used for predefined ellipsis and polygons.
@@ -1428,9 +1571,9 @@ for (   i = 1; i &lt;= 3; i++ ) {
 var ellipseRX = 200, ellipseRY = 110;
 //predefine ellipsis for 4 sets venn diagram
 predefineShape[4] = [	{ &quot;id&quot;: 1, &quot;cx&quot;: 196, &quot;cy&quot;: 246,&quot;rotate&quot;: 45,  &quot;textX&quot;: 70,  &quot;textY&quot;: 135 },
-							{ &quot;id&quot;: 2, &quot;cx&quot;: 266, &quot;cy&quot;: 176,&quot;rotate&quot;: 45,  &quot;textX&quot;: 138, &quot;textY&quot;: 55 },
-							{ &quot;id&quot;: 3, &quot;cx&quot;: 326, &quot;cy&quot;: 176,&quot;rotate&quot;: 135, &quot;textX&quot;: 435, &quot;textY&quot;: 58 },
-							{ &quot;id&quot;: 4, &quot;cx&quot;: 396, &quot;cy&quot;: 246,&quot;rotate&quot;: 135, &quot;textX&quot;: 508, &quot;textY&quot;: 135 }];
+						{ &quot;id&quot;: 2, &quot;cx&quot;: 266, &quot;cy&quot;: 176,&quot;rotate&quot;: 45,  &quot;textX&quot;: 138, &quot;textY&quot;: 55 },
+						{ &quot;id&quot;: 3, &quot;cx&quot;: 326, &quot;cy&quot;: 176,&quot;rotate&quot;: 135, &quot;textX&quot;: 435, &quot;textY&quot;: 58 },
+						{ &quot;id&quot;: 4, &quot;cx&quot;: 396, &quot;cy&quot;: 246,&quot;rotate&quot;: 135, &quot;textX&quot;: 508, &quot;textY&quot;: 135 }];
 
 //predefine ellipsis for 5 sets venn diagram
 predefineShape[5] = [	{ &quot;id&quot;: 1, &quot;cx&quot;: 263, &quot;cy&quot;: 213,&quot;rotate&quot;: 90,  &quot;textX&quot;: 258, &quot;textY&quot;: 50  },
@@ -1448,7 +1591,7 @@ predefineShape[6] = [	{ &quot;id&quot;: 1, &quot;textX&quot;: 115, &quot;textY&q
 						{ &quot;id&quot;: 6, &quot;textX&quot;: 135, &quot;textY&quot;: 290, &quot;d&quot;: &quot;M  60.184 344.046 L 262.476 109.903 L 223.276 253.962 Z&quot; }];
 
 //predefine ellipsis for 7 sets venn diagram
-predefineShape[7] = [	{ &quot;id&quot;: 1, &quot;cx&quot;: 220, &quot;cy&quot;: 288,&quot;rotate&quot;: 0,   &quot;textX&quot;: 40,  &quot;textY&quot;: 228 },
+predefineShape[7] = [	{ &quot;id&quot;: 1, &quot;cx&quot;: 220, &quot;cy&quot;: 288,&quot;rotate&quot;: 0,   &quot;textX&quot;: 40,  &quot;textY&quot;: 268 },
 						{ &quot;id&quot;: 2, &quot;cx&quot;: 216, &quot;cy&quot;: 246,&quot;rotate&quot;: 51,  &quot;textX&quot;: 96,  &quot;textY&quot;: 117 },
 						{ &quot;id&quot;: 3, &quot;cx&quot;: 246, &quot;cy&quot;: 217,&quot;rotate&quot;: 102, &quot;textX&quot;: 273, &quot;textY&quot;: 49  },
 						{ &quot;id&quot;: 4, &quot;cx&quot;: 289, &quot;cy&quot;: 222,&quot;rotate&quot;: 154, &quot;textX&quot;: 434, &quot;textY&quot;: 152 },
@@ -1458,7 +1601,7 @@ predefineShape[7] = [	{ &quot;id&quot;: 1, &quot;cx&quot;: 220, &quot;cy&quot;: 
 
 for (  i = 4; i &lt;= this._N; i++ ) {
 	//6 sets Venn diagram is a special case
-	if ( i != 6 ) {
+	if ( i !== 6 ) {
 		for (  j = 0; j &lt; i; j++ ){
 			predefineShape[i][j].rx = ellipseRX;
 			predefineShape[i][j].ry = ellipseRY;
@@ -1519,11 +1662,13 @@ tooltip.append( &quot;p&quot; )
 tooltip.append( &quot;div&quot; )
 	.attr(&quot;id&quot;, &quot;vennToolTipList&quot;).style( &quot;color&quot;, &quot;white&quot; );
     
-    if ( clickCallback )
+    if ( clickCallback ){
     	clickChartCallback = clickCallback;
+    }
 
-    if ( lists )
+    if ( lists ){
     	this.updateAllList( lists );
+    }
 };
 
 exports.BioJSVenn.prototype = VennPrototype;</code></pre>
