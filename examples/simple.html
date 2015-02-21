@@ -1,0 +1,191 @@
+
+  	<div id="tooltip" class="hidden">
+        <p><strong id="v"></strong></p>
+        <p><span id="value">100</span></p>
+	</div>
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">BioJSVenn</a>
+        </div>
+        <div class="navbar-collapse collapse navbar-right">
+          <ul class="nav navbar-nav">
+           
+          	<li><a href="#">about</a></li>
+            <li><a href="#">features</a></li>
+            <li><a href="../docs/index.html">docs</a></li>
+
+          </ul>
+        </div>
+      </div>
+    </div>
+
+
+	<div id="blue">
+	    <div class="container">
+			<div class="row">
+				<h3>gene list venn diagram</h3>
+			</div>
+	    </div> 
+	</div>
+
+
+
+	 <div class="container mtb">
+	 	<div class="row">
+	 		<div class="col-lg-4">
+		 		<h4>Gene Lists</h4>
+		 		<div class="hline"></div>
+		 		<div class="spacing"></div>
+
+		 		<div class="selectMode">
+					<label class="radio-inline">
+						<input id="radio-inline-predefine" type="radio" name="optradio">static layout Mode
+					</label>
+					<label class="radio-inline">
+						<input id="radio-inline-auto" type="radio" name="optradio" checked>auto layout Mode
+					</label>
+				</div>
+
+		 		<div id="container">
+					   <!-- <textarea id = "title1" class="form-control status-box" rows="1" placeholder="First List name"></textarea> -->
+
+
+					<div> <input id="title1" type="text" value="List 1"> </div>
+					<div class="List-group-1">
+					   <textarea  id = "s1" class="form-control status-box genelist" rows="4" placeholder="Please put first list here"></textarea>
+					</div>
+
+					<div class="List-group-2-label">
+						<!-- <textarea id = "title2" class="form-control status-box" rows="1" placeholder="Second List name"></textarea> -->
+					</div>
+					  <div> <input id="title2" type="text" value="List 2"> </div>
+					  <div class="List-group-2">
+					   	<textarea id = "s2" class="form-control genelist" rows="4" placeholder="Please put second list here"></textarea>
+
+					  </div>
+
+					  <div class="List-group-3-label">
+
+					  <!--  <textarea id = "title3" class="form-control status-box" rows="1" placeholder="Third List name"></textarea> -->
+					  
+					  </div>
+					  <div> <input id="title3" type="text" value="List 3"> </div>
+					  <div class="List-group-3">
+					   	<textarea id = "s3" class="form-control genelist" rows="4" placeholder="Please put third list here"></textarea>
+
+					  </div>
+
+					  <div class="List-group-4-label">
+
+					   <!-- <textarea id = "title4" class="form-control status-box" rows="1" placeholder="Fourth List name"></textarea> -->
+					  
+					  </div>
+					  <div> <input id="title4" type="text" value="List 4"> </div>
+					  <div class="List-group-4">
+					   	<textarea id = "s4" class="form-control genelist" rows="4" placeholder="Please put fourth list here"></textarea>
+
+					  </div>
+
+					  <div> <input id="title5" type="text" value="List 5"> </div>
+					  <div class="List-group-5">
+					   	<textarea id = "s5" class="form-control genelist" rows="4" placeholder="Please put fifth list here"></textarea>
+					  </div>
+
+					  <div> <input id="title6" type="text" value="List 6"> </div>
+					  <div class="List-group-6">
+					   	<textarea id = "s6" class="form-control genelist" rows="4" placeholder="Please put sixth list here"></textarea>
+					  </div>
+
+					  <div> <input id="title7" type="text" value="List 7"> </div>
+					  <div class="List-group-7">
+					   	<textarea id = "s7" class="form-control genelist" rows="4" placeholder="Please put seventh list here"></textarea>
+					  </div>
+
+				</div>
+
+					<div class="btn-group">
+						<div class="btn btn-default btn-file">
+							Browser <input type="file" id="files" name="file" data-filename-placement="inside">
+						</div>
+
+						<input id="load-simple-file" class="btn btn-default" type="button" value="Load Sample file"/>
+
+					</div>
+
+					<div class="file-structure-explain">
+						<p>If you want to upload your own JSON file, here is the structure:</p>
+						<p> { "s1": [ "A", "B", "C", "D" ], <br>
+						"s2": ["B", "C", "E", "F", "G"] } </p>
+					</div>
+	 		</div>
+	 		
+	 		<div class="col-lg-8">
+
+	 			<div id="venn-diagram">
+					<div id="first">
+
+
+				
+					</div>
+				</div>
+
+				<div class="btn-group">
+					<input id="save-svg-png" class="btn btn-default" type="button" value="Save as PNG"/>
+					<input id="save-require-list" class="btn btn-default" type="button" value="Save required list"/>
+					<input id="save-all-list" class="btn btn-default" type="button" value="Save all list"/>
+				</div>
+
+					<div id = "output-list-checkbox">
+						<label class="checkbox-inline">
+							<input type="checkbox" id="inlineCheckbox1" value="option1" disabled> 
+							<label id="inlineCheckboxLabel1">List 1</label>
+						</label>
+						
+						<label class="checkbox-inline">
+								<input type="checkbox" id="inlineCheckbox2" value="option2" disabled>
+								<label id="inlineCheckboxLabel2">List 2</label>
+						</label>
+						
+						<label class="checkbox-inline">
+								<input type="checkbox" id="inlineCheckbox3" value="option3" disabled>
+								<label id="inlineCheckboxLabel3">List 3</label>
+						</label>
+
+						<label class="checkbox-inline">
+								<input type="checkbox" id="inlineCheckbox4" value="option4" disabled>
+								<label id="inlineCheckboxLabel4">List 4</label>
+						</label>
+
+							<label class="checkbox-inline">
+								<input type="checkbox" id="inlineCheckbox5" value="option5" disabled>
+								<label id="inlineCheckboxLabel5">List 5</label>
+						</label>
+						
+						<label class="checkbox-inline">
+								<input type="checkbox" id="inlineCheckbox6" value="option6" disabled>
+								<label id="inlineCheckboxLabel6">List 6</label>
+						</label>
+						
+						<label class="checkbox-inline">
+								<input type="checkbox" id="inlineCheckbox7" value="option7" disabled>
+								<label id="inlineCheckboxLabel7">List 7</label>
+						</label>					
+					</div>
+
+					<div class="output-list">
+						<textarea id="intersectSetList" class="form-control genelist" rows="5" placeholder="selected lists' intersect" readonly></textarea>
+					</div>
+				</div>
+	 		
+	 		
+	 		
+	 		
+	 	</div>
+	 </div>
