@@ -2,14 +2,17 @@
 <html lang="en-US">
     <head>
         <meta charset="UTF-8">
-        <meta http-equiv="refresh" content="1;url=./build/index.html">
-        <script type="text/javascript">
-            window.location.href = "./build/index.html"
+        <link type="text/css" rel="stylesheet" href="build/bundle.css">
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <script src="build/venn.js"></script>
+        <script> 
+            $(function(){
+                $("#includedContent").load("examples/simple.html"); 
+            });
         </script>
-        <title>Page Redirection</title>
     </head>
     <body>
-        <!-- Note: don't tell people to `click` the link, just tell them that it is a link. -->
-        If you are not redirected automatically, follow the <a href='./build/index.html'>link to example</a>
+        <div id="includedContent"></div>
     </body>
+    <script src="examples/simple.js"></script>
 </html>
